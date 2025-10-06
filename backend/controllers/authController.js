@@ -13,14 +13,51 @@ const registerUser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const user = new User({ name, email, password: hashedPassword });
+        // Generate verification token
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const verificationTokenExpire = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+
+        const user = new User({
+            name,
+            email,
+            password: hashedPassword,
+            verificationToken,
+            verificationTokenExpire
+        });
+
         await user.save();
 
-        res.status(201).json({ message: 'User registered successfully' });
+        // Send verification email
+        const verifyUrl = `http://localhost:5173/verify-email/${verificationToken}`;
+        const message = `Please verify your email by clicking on the link: ${verifyUrl}`;
+
+        await sendEmail(user.email, 'Email Verification', message);
+
+        res.status(201).json({ message: 'User registered. Please check your email to verify.' });
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
+
+const verifyEmail = async (req, res) => {
+    const { token } = req.params;
+
+    const user = await User.findOne({
+        verificationToken: token,
+        verificationTokenExpire: { $gt: Date.now() }
+    });
+
+    if (!user) return res.status(400).json({ message: 'Invalid or expired verification token' });
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpire = undefined;
+
+    await user.save();
+
+    res.json({ message: 'Email verified successfully. You can now log in.' });
+};
+
 
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
@@ -28,7 +65,10 @@ const loginUser = async (req, res) => {
     try {
         const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ message: 'Invalid email or password' });
-
+        if (!user.isVerified) {
+            return res.status(401).json({ message: 'Please verify your email before logging in' });
+        }
+        
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Invalid email or password' });
 
@@ -105,4 +145,4 @@ const resetPassword = async (req, res) => {
 
 
 
-module.exports = { registerUser, loginUser, forgotPassword, resetPassword };
+module.exports = { registerUser, loginUser, forgotPassword, resetPassword, verifyEmail };
