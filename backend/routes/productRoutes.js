@@ -1,20 +1,22 @@
 const express = require('express');
-const router = express.Router();
-const { isAuthenticated, isAdmin } = require('../middleware/auth');
-
-
 const {
-    createProduct,
-    getAllProducts,
-    getProductById,
-    updateProduct,
-    deleteProduct,
+  createProduct,
+  getAllProducts,
+  getProduct,
+  updateProduct,
+  deleteProduct
 } = require('../controllers/productController');
 
-// Routes
-router.post('/', isAuthenticated, isAdmin, createProduct);
+const { isAuthenticated, isAdmin } = require('../middleware/auth');
+
+const router = express.Router();
+
+// Public
 router.get('/', getAllProducts);
-router.get('/:id', getProductById);
+router.get('/:id', getProduct);
+
+// Admin only
+router.post('/', isAuthenticated, isAdmin, createProduct);
 router.put('/:id', isAuthenticated, isAdmin, updateProduct);
 router.delete('/:id', isAuthenticated, isAdmin, deleteProduct);
 
