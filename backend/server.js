@@ -7,6 +7,8 @@ const PORT = process.env.PORT || 5000;
 const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userActionsRoutes = require('./routes/userActionsRoutes');
+const couponRoutes = require('./routes/couponRoutes');
+
 
 app.use(express.json());
 
@@ -22,6 +24,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/user', userActionsRoutes);
+app.use('/api/coupons', couponRoutes);
 
 
 app.listen(PORT, () => {
