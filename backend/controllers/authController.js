@@ -143,6 +143,4 @@ const resetPassword = async (req, res) => {
     res.json({ message: 'Password reset successful' });
 };
 
-
-
 module.exports = { registerUser, loginUser, forgotPassword, resetPassword, verifyEmail };
