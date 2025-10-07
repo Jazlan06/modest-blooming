@@ -8,6 +8,7 @@ const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userActionsRoutes = require('./routes/userActionsRoutes');
 const couponRoutes = require('./routes/couponRoutes');
+const saleRoutes = require('./routes/saleRoutes');
 
 
 app.use(express.json());
@@ -25,6 +26,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/user', userActionsRoutes);
 app.use('/api/coupons', couponRoutes);
+app.use('/api/sales', saleRoutes);
 
 
 app.listen(PORT, () => {
