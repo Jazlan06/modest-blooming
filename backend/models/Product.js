@@ -17,6 +17,10 @@ const productSchema = new mongoose.Schema({
     ],
     images: [String], // all images (Cloudinary URLs)
     isBestSeller: { type: Boolean, default: false },
+    stock: {
+        type: Number,
+        default: 0
+    },
     inStock: { type: Boolean, default: true },
     createdAt: { type: Date, default: Date.now }
 });
