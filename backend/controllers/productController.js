@@ -3,8 +3,8 @@ const slugify = require('slugify');
 
 const createProduct = async (req, res) => {
     try {
-        const { title, description, price, discountPrice, category, tags, colors } = req.body;
-        const slug = slugify(title, { lower: true });
+        const { name, description, price, discountPrice, category, tags, colors } = req.body;
+        const slug = slugify(name, { lower: true });
 
         // Upload product images
         const images = req.files['images']?.map(file => file.path) || [];
@@ -21,7 +21,7 @@ const createProduct = async (req, res) => {
         }));
 
         const product = new Product({
-            title,
+            name,
             slug,
             description,
             price,

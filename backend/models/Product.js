@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-    title: { type: String, required: true },
+    name: { type: String, required: true },
     slug: { type: String },
     description: { type: String },
     price: { type: Number, required: true },
@@ -16,8 +16,8 @@ const productSchema = new mongoose.Schema({
         }
     ],
     images: [String], // all images (Cloudinary URLs)
-    isBestSeller: { type: Boolean, default: false },
-    stock: {
+    bestSelling: { type: Boolean, default: false },
+    quantity: {
         type: Number,
         default: 0
     },

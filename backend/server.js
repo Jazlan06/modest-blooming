@@ -11,7 +11,8 @@ const couponRoutes = require('./routes/couponRoutes');
 const saleRoutes = require('./routes/saleRoutes');
 const cmsRoutes = require('./routes/cmsRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
-
+const feedbackRoutes = require('./routes/feedbackRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 
 app.use(express.json());
 
@@ -31,6 +32,8 @@ app.use('/api/coupons', couponRoutes);
 app.use('/api/sales', saleRoutes);
 app.use('/api/cms', cmsRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/orders', orderRoutes);
 
 
 app.listen(PORT, () => {
