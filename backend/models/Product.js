@@ -12,16 +12,19 @@ const productSchema = new mongoose.Schema({
         {
             colorName: String,
             colorCode: String,
-            image: String, // cloudinary image
+            image: String, // cloudinary image/video
+            price : Number,
+            discountPrice : Number
         }
     ],
-    images: [String], // all images (Cloudinary URLs)
+    media: [String], // all images (Cloudinary URLs)
     bestSelling: { type: Boolean, default: false },
     quantity: {
         type: Number,
         default: 0
     },
     inStock: { type: Boolean, default: true },
+    groupId: { type: String },
     createdAt: { type: Date, default: Date.now }
 });
 

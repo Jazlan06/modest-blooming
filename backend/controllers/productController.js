@@ -1,13 +1,15 @@
 const Product = require('../models/Product');
 const slugify = require('slugify');
+const { v4: uuidv4 } = require('uuid');
+
 
 const createProduct = async (req, res) => {
     try {
-        const { name, description, price, discountPrice, category, tags, colors } = req.body;
+        const { name, description, price, discountPrice, category, tags, colors, groupId } = req.body;
         const slug = slugify(name, { lower: true });
 
-        // Upload product images
-        const images = req.files['images']?.map(file => file.path) || [];
+        // Upload product images/videos
+        const media = req.files['images']?.map(file => file.path) || [];
 
         // Parse color data from req.body.colors (should be JSON string)
         const parsedColors = colors ? JSON.parse(colors) : [];
@@ -29,7 +31,8 @@ const createProduct = async (req, res) => {
             category,
             tags: tags ? JSON.parse(tags) : [],
             colors: finalColors,
-            images
+            media,
+            groupId: groupId || uuidv4()
         });
 
         await product.save();
@@ -38,6 +41,60 @@ const createProduct = async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: err.message });
+    }
+};
+
+const cloneProductAsVariant = async (req, res) => {
+    try {
+        const originalProduct = await Product.findById(req.params.id);
+        if (!originalProduct)
+            return res.status(404).json({ message: 'Original product not found' });
+
+        const {
+            colorName,
+            colorCode,
+            price, // optional: per-variant
+            discountPrice, // optional
+            quantity
+        } = req.body;
+
+        // Upload media (images/videos)
+        const media = req.files['images']?.map(file => file.path) || [];
+
+        // Build new color object with optional price
+        const newColor = {
+            colorName,
+            colorCode,
+            image: media[0] || '',
+            ...(price && { price: Number(price) }),
+            ...(discountPrice && { discountPrice: Number(discountPrice) })
+        };
+
+        const newProduct = new Product({
+            name: originalProduct.name,
+            slug: slugify(`${originalProduct.name}-${colorName}`, { lower: true }),
+            description: originalProduct.description,
+            price: originalProduct.price, // fallback price
+            discountPrice: originalProduct.discountPrice,
+            category: originalProduct.category,
+            tags: originalProduct.tags,
+            colors: [newColor],
+            media,
+            groupId: originalProduct.groupId || uuidv4(),
+            quantity: quantity || 0,
+            inStock: true
+        });
+
+        await newProduct.save();
+
+        res.status(201).json({
+            message: 'Variant created',
+            product: newProduct
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
 
@@ -55,6 +112,32 @@ const getProduct = async (req, res) => {
         const product = await Product.findById(req.params.id);
         if (!product) return res.status(404).json({ message: 'Product not found' });
         res.json(product);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+const getProductVariants = async (req, res) => {
+    try {
+        const variants = await Product.find({ groupId: req.params.groupId });
+        res.json(variants);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+const getVariantPriceById = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: 'Product not found' });
+
+        const colorName = req.params.colorName;
+        const color = product.colors.find(c => c.colorName.toLowerCase() === colorName.toLowerCase());
+
+        const price = color?.price || product.price;
+        const discount = color?.discountPrice || product.discountPrice;
+
+        res.json({ price, discount });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -88,8 +171,11 @@ const deleteProduct = async (req, res) => {
 
 module.exports = {
     createProduct,
+    cloneProductAsVariant,
     getAllProducts,
     getProduct,
+    getProductVariants,
+    getVariantPriceById,
     updateProduct,
     deleteProduct
 };
