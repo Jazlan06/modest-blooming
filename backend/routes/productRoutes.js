@@ -6,21 +6,20 @@ const {
     getProduct,
     getProductVariants,
     getVariantPriceById,
+    getProductVariantWeight,
     updateProduct,
     deleteProduct
 } = require('../controllers/productController');
 
 const { isAuthenticated, isAdmin } = require('../middleware/auth');
 const parser = require('../middleware/productUpload');
-
 const router = express.Router();
-
 // Public
 router.get('/', getAllProducts);
 router.get('/variants/:groupId', getProductVariants);
+router.get('/:id/weight/:colorName', getProductVariantWeight);
 router.get('/:id/price/:colorName', getVariantPriceById);
 router.get('/:id', getProduct);
-
 // Admin only
 router.post(
     '/',

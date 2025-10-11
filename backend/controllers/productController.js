@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const createProduct = async (req, res) => {
     try {
-        const { name, description, price, discountPrice, category, tags, colors, groupId } = req.body;
+        const { name, description, price, discountPrice, category, tags, colors, groupId, weight } = req.body;
         const slug = slugify(name, { lower: true });
 
         // Upload product images/videos
@@ -32,7 +32,8 @@ const createProduct = async (req, res) => {
             tags: tags ? JSON.parse(tags) : [],
             colors: finalColors,
             media,
-            groupId: groupId || uuidv4()
+            groupId: groupId || uuidv4(),
+            weight: Number(weight)
         });
 
         await product.save();
@@ -55,7 +56,8 @@ const cloneProductAsVariant = async (req, res) => {
             colorCode,
             price, // optional: per-variant
             discountPrice, // optional
-            quantity
+            quantity,
+            weight //optional
         } = req.body;
 
         // Upload media (images/videos)
@@ -67,7 +69,8 @@ const cloneProductAsVariant = async (req, res) => {
             colorCode,
             image: media[0] || '',
             ...(price && { price: Number(price) }),
-            ...(discountPrice && { discountPrice: Number(discountPrice) })
+            ...(discountPrice && { discountPrice: Number(discountPrice) }),
+            ...(weight && { weight: Number(weight) })
         };
 
         const newProduct = new Product({
@@ -82,7 +85,8 @@ const cloneProductAsVariant = async (req, res) => {
             media,
             groupId: originalProduct.groupId || uuidv4(),
             quantity: quantity || 0,
-            inStock: true
+            inStock: true,
+            weight: Number(weight) || originalProduct.weight
         });
 
         await newProduct.save();
@@ -143,6 +147,21 @@ const getVariantPriceById = async (req, res) => {
     }
 };
 
+const getProductVariantWeight = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: 'Product not found' });
+
+        const selectedColor = req.params.colorName;
+        const color = product.colors.find(c => c.colorName === selectedColor);
+        const weight = color?.weight || product.weight;
+
+        res.json({ weight });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 const updateProduct = async (req, res) => {
     try {
         const updated = await Product.findByIdAndUpdate(
@@ -176,6 +195,7 @@ module.exports = {
     getProduct,
     getProductVariants,
     getVariantPriceById,
+    getProductVariantWeight,
     updateProduct,
     deleteProduct
 };

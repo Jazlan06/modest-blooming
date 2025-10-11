@@ -13,8 +13,9 @@ const productSchema = new mongoose.Schema({
             colorName: String,
             colorCode: String,
             image: String, // cloudinary image/video
-            price : Number,
-            discountPrice : Number
+            price: Number,
+            discountPrice: Number,
+            weight: Number
         }
     ],
     media: [String], // all images (Cloudinary URLs)
@@ -24,6 +25,11 @@ const productSchema = new mongoose.Schema({
         default: 0
     },
     inStock: { type: Boolean, default: true },
+    weight: {
+        type: Number,
+        required: true,
+        min: [0.01, 'Weight must be at least 0.01kg']
+    },
     groupId: { type: String },
     createdAt: { type: Date, default: Date.now }
 });
