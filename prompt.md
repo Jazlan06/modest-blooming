@@ -124,3 +124,18 @@ Deploy frontend on Vercel, Netlify, or similar.
 Connect your domain and set up SSL certificates. 
 :
 So i was building the backend first, so was done with auth, product, coupon management, sale maangement, cms for home page as owner wants everything controlled dynamically using cms/admin/owner & userActions like wishlist & cart, we didn't completed the checkout & order feature as the owner didn't updated me how will the delivery charges will be applicable so this and billing will be done when updated, so we were working on analytics lastly so lets start with it.
+
+
+# 12/10/25
+
+## Prompt
+
+Okay now we gonna implement the logic for delivery rate calculation beased on total cart weight & location. Lets do the delivery rate calculation logic first. So we gonna take address of user state, city, pincode, locality(like i live in mazgaon, dockyard), street address, apartmennt/house address. Business is located at Dockyard Road, mumbai - so delivery agent gave me this rate :
+1. Mumbai, Navi Mumbai, Thane & nearby - 50/kg.
+2. Whole Maharashtra Except (1) - 60/kg.
+3. Whole Gujrat - 70/kg
+4. Rest nearby states - 80/kg
+5. North & North East(like jammu&kashmir, manipur,etc) - 140/kg
+6. where they cant reach(1-4) they'll do dtdc - 100/kg .
+:
+so the weight will be calculated for each product & it's quantity, if the customers neeed a hamper an additional 0.25kg will be added in end weight with products. Then total weight will be calculated and based on user location delivery rate will be applicable. If the total weight sums up 1.05 kg as example it will be calculated as 2 kg means anything above 1 kg will be calculated 2kg and anything above 2kg will be calculated 3 kg and hence. 

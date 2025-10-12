@@ -6,14 +6,25 @@ const orderSchema = new mongoose.Schema({
         {
             product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
             quantity: { type: Number, required: true },
+            selectedVariant: { type: String },
             priceAtPurchase: { type: Number, required: true }
         }
     ],
     totalAmount: { type: Number, required: true },
+    deliveryCharge: { type: Number },
+    address: {
+        locality: String,
+        city: String,
+        state: String,
+        pincode: String,
+        street: String,
+        apartment: String
+    },
+    isHamper: { type: Boolean, default: false },
     couponApplied: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
     status: {
         type: String,
-        enum: ['pending', 'completed', 'cancelled'],
+        enum: ['pending','shipped', 'completed', 'cancelled'],
         default: 'pending'
     },
 }, { timestamps: true });

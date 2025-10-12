@@ -1,22 +1,63 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const { calculateDeliveryCharge } = require('../helpers/calculateDeliveryCharge');
 
 exports.placeOrder = async (req, res) => {
     try {
-        const { products, totalAmount, couponApplied } = req.body;
+        const { products, totalAmount, couponApplied, address, isHamper } = req.body;
 
         if (!products || products.length === 0) {
             return res.status(400).json({ message: 'No products provided' });
         }
 
+        const populatedCart = await Promise.all(products.map(async (item) => {
+            const product = await Product.findById(item.product);
+            return {
+                product,
+                quantity: item.quantity,
+                selectedVariant: item.selectedVariant
+            };
+        }));
+        // Format cart for deliveryCharge util
+        const formattedCart = populatedCart.map(item => ({
+            product: item.product,
+            selectedVariant: item.selectedVariant,
+            quantity: item.quantity
+        }));
+
+        const { deliveryCharge, ratePerKg, totalWeight } = calculateDeliveryCharge({
+            cartItems: formattedCart,
+            address,
+            isHamper
+        });
+
+        const finalAmount = totalAmount + deliveryCharge;
+
+        // Save only necessary product fields in order
+        const orderProducts = products.map(item => ({
+            product: item.product,
+            quantity: item.quantity,
+            selectedVariant: item.selectedVariant,
+            priceAtPurchase: item.priceAtPurchase
+        }));
+
         const order = await Order.create({
             user: req.user.userId,
-            products,
-            totalAmount,
+            products: orderProducts,
+            totalAmount: finalAmount,
+            deliveryCharge,
+            address,
+            isHamper,
             couponApplied
         });
 
-        res.status(201).json({ message: 'Order placed successfully', order });
+        res.status(201).json({
+            message: 'Order placed successfully',
+            order,
+            deliveryCharge,
+            totalWeight,
+            ratePerKg
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
