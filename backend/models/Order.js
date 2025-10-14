@@ -22,9 +22,14 @@ const orderSchema = new mongoose.Schema({
     },
     isHamper: { type: Boolean, default: false },
     couponApplied: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
+    paymentInfo: {
+        paymentId: { type: String },
+        orderId: { type: String },
+        signature: { type: String }
+    },
     status: {
         type: String,
-        enum: ['pending','shipped', 'completed', 'cancelled'],
+        enum: ['pending', 'shipped', 'completed', 'cancelled'],
         default: 'pending'
     },
 }, { timestamps: true });

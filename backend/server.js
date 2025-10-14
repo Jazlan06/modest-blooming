@@ -13,6 +13,8 @@ const cmsRoutes = require('./routes/cmsRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const deliveryRoutes = require('./routes/deliveryRoutes');
+const deliveryRateRoutes = require('./routes/admin/deliveryRateRoutes');
 
 app.use(express.json());
 
@@ -34,7 +36,8 @@ app.use('/api/cms', cmsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/orders', orderRoutes);
-
+app.use('/api/delivery', deliveryRoutes);
+app.use('/api/admin/delivery-rates', deliveryRateRoutes);
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);

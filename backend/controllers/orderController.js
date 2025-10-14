@@ -37,7 +37,7 @@ exports.placeOrder = async (req, res) => {
             quantity: item.quantity
         }));
 
-        const { deliveryCharge, ratePerKg, totalWeight } = calculateDeliveryCharge({
+        const { deliveryCharge, ratePerKg, totalWeight } = await calculateDeliveryCharge({
             cartItems: formattedCart,
             address,
             isHamper

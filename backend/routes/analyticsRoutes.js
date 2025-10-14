@@ -6,10 +6,7 @@ const {
   getTopSellingProducts,
   getUserRegistrationCount,
   getActiveUsersToday,
-  getUsersWithRepeatedOrders,
-//   createFeedback,
-//   getAllFeedback,
-//   deleteFeedback
+  getUsersWithRepeatedOrders
 } = require('../controllers/analyticsController');
 
 const { isAuthenticated, isAdmin } = require('../middleware/auth');
@@ -29,11 +26,5 @@ router.get('/top-products', getTopSellingProducts);
 router.get('/user-registrations', getUserRegistrationCount);
 router.get('/active-users-today', getActiveUsersToday);
 router.get('/repeated-users', getUsersWithRepeatedOrders);
-
-
-// // Feedback management
-// router.post('/feedback', createFeedback); // Can be open to all or protected, your choice
-// router.get('/feedback', getAllFeedback);
-// router.delete('/feedback/:id', deleteFeedback);
 
 module.exports = router;
