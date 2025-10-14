@@ -1,6 +1,8 @@
 const express = require('express');
 const {
     createProduct,
+    searchProducts,
+    filterProducts,
     cloneProductAsVariant,
     getAllProducts,
     getProduct,
@@ -15,6 +17,8 @@ const { isAuthenticated, isAdmin } = require('../middleware/auth');
 const parser = require('../middleware/productUpload');
 const router = express.Router();
 // Public
+router.get('/search', searchProducts);
+router.get('/filter', filterProducts);
 router.get('/', getAllProducts);
 router.get('/variants/:groupId', getProductVariants);
 router.get('/:id/weight/:colorName', getProductVariantWeight);

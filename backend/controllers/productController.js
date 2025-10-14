@@ -45,6 +45,98 @@ const createProduct = async (req, res) => {
     }
 };
 
+const searchProducts = async (req, res) => {
+    try {
+        const query = req.query.q;
+
+        if (!query) {
+            return res.status(400).json({ message: 'Search query missing' });
+        }
+
+        const regex = new RegExp(query, 'i'); // 'i' = case-insensitive
+
+        const results = await Product.find({
+            $or: [
+                { name: regex },
+                { tags: regex },
+                { category: regex },
+                { description: regex }
+            ]
+        }).sort({ createdAt: -1 }).limit(15);
+
+        res.json(results);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+const filterProducts = async (req, res) => {
+  try {
+    const {
+      category,
+      minPrice,
+      maxPrice,
+      tags,
+      colors,
+      inStock,
+      bestSelling,
+      minWeight,
+      maxWeight
+    } = req.query;
+
+    const filter = {};
+
+    // Category filter
+    if (category) {
+      filter.category = category;
+    }
+
+    // Price range filter
+    if (minPrice || maxPrice) {
+      filter.discountPrice = {};
+      if (minPrice) filter.discountPrice.$gte = Number(minPrice);
+      if (maxPrice) filter.discountPrice.$lte = Number(maxPrice);
+    }
+
+    // Tags filter (comma-separated)
+    if (tags) {
+      const tagList = tags.split(',').map(tag => tag.trim());
+      filter.tags = { $in: tagList };
+    }
+
+    // Color filter (comma-separated)
+    if (colors) {
+      const colorList = colors.split(',').map(c => c.trim());
+      filter['colors.colorName'] = { $in: colorList };
+    }
+
+    // Stock filter
+    if (inStock === 'true') {
+      filter.inStock = true;
+    }
+
+    // Best selling
+    if (bestSelling === 'true') {
+      filter.bestSelling = true;
+    }
+
+    // Weight range filter
+    if (minWeight || maxWeight) {
+      filter.weight = {};
+      if (minWeight) filter.weight.$gte = Number(minWeight);
+      if (maxWeight) filter.weight.$lte = Number(maxWeight);
+    }
+
+    const products = await Product.find(filter).sort({ createdAt: -1 });
+
+    res.json(products);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 const cloneProductAsVariant = async (req, res) => {
     try {
         const originalProduct = await Product.findById(req.params.id);
@@ -190,6 +282,8 @@ const deleteProduct = async (req, res) => {
 
 module.exports = {
     createProduct,
+    searchProducts,
+    filterProducts,
     cloneProductAsVariant,
     getAllProducts,
     getProduct,
