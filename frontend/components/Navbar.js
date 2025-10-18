@@ -9,6 +9,7 @@ export default function Navbar() {
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [role, setRole] = useState(null);
     const inputRef = useRef(null);
     const router = useRouter();
     const { pathname } = router;
@@ -16,7 +17,13 @@ export default function Navbar() {
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const token = localStorage.getItem('token');
+            const userData = localStorage.getItem('user');
             setIsLoggedIn(!!token);
+
+            if (userData) {
+                const parsedUser = JSON.parse(userData);
+                setRole(parsedUser.role || null); // ✅ set role
+            }
         }
     }, []);
 
@@ -97,6 +104,13 @@ export default function Navbar() {
                             <Link href="/shop" className="hover:underline focus:outline-none focus:ring-0">Shop</Link>
                             <Link href="/about" className="hover:underline focus:outline-none focus:ring-0">About</Link>
                             <Link href="/contact" className="hover:underline focus:outline-none focus:ring-0">Contact</Link>
+
+                            {role === 'admin' && (
+                                <>
+                                    <Link href="/admin" className="hover:underline focus:outline-none focus:ring-0 text-yellow-200">Admin</Link>
+                                    <Link href="/admin/analytics" className="hover:underline focus:outline-none focus:ring-0 text-yellow-200">Analytics</Link>
+                                </>
+                            )}
                         </div>
 
                         {/* Desktop Icons */}
@@ -166,11 +180,16 @@ export default function Navbar() {
 
                         {/* Navigation */}
                         <nav className="flex flex-col gap-6 text-lg font-semibold text-gray-800">
-                            {[
-                                { href: '/', label: 'Home' },
-                                { href: '/shop', label: 'Shop' },
-                                { href: '/about', label: 'About' },
-                                { href: '/contact', label: 'Contact' },
+                            {[{ href: '/', label: 'Home' },
+                            { href: '/shop', label: 'Shop' },
+                            { href: '/about', label: 'About' },
+                            { href: '/contact', label: 'Contact' },
+                            ...(role === 'admin'
+                                ? [
+                                    { href: '/admin', label: 'Admin' },
+                                    { href: '/admin/analytics', label: 'Analytics' },
+                                ]
+                                : [])
                             ].map(({ href, label }) => {
                                 const isActive = pathname === href;
                                 return (
@@ -179,7 +198,7 @@ export default function Navbar() {
                                         href={href}
                                         onClick={() => setMobileMenuOpen(false)}
                                         className={`focus:outline-none focus:ring-2 focus:ring-[#F4C2C2] rounded 
-                                            ${isActive
+                    ${isActive
                                                 ? 'text-[#F4C2C2]'
                                                 : 'text-black hover:underline hover:decoration-[#F4C2C2]'
                                             }`}

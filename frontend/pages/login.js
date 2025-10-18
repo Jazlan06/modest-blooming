@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Navbar from '@/components/Navbar';
 
 export default function LoginPage() {
+    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -48,7 +50,13 @@ export default function LoginPage() {
             setTimeout(() => {
                 setSuccessModal(false);
                 setIsLoggedIn(true);
-            }, 2000);
+
+                if (data.user.role === 'admin') {
+                    router.push('/admin');
+                } else {
+                    router.push('/');
+                }
+            }, 1500);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -126,6 +134,11 @@ export default function LoginPage() {
                                 >
                                     {loading ? 'Logging in...' : 'Log In'}
                                 </button>
+                                <p className="text-sm text-right">
+                                    <a href="/forgot-password" className="text-[#8B3E5D] font-medium hover:underline">
+                                        Forgot Password?
+                                    </a>
+                                </p>
                             </form>
 
                             <p className="text-center text-gray-700 font-medium mt-4">

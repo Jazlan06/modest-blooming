@@ -62,6 +62,35 @@ const verifyEmail = async (req, res) => {
     res.json({ message: 'Email verified successfully. You can now log in.' });
 };
 
+const resendVerificationEmail = async (req, res) => {
+    const { email } = req.body;
+    console.log('📩 Resend verification initiated for:', email);
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (user.isVerified) return res.status(400).json({ message: 'Email is already verified' });
+
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const verificationTokenExpire = Date.now() + 24 * 60 * 60 * 1000;
+
+        user.verificationToken = verificationToken;
+        user.verificationTokenExpire = verificationTokenExpire;
+        await user.save();
+
+        const verifyUrl = `http://localhost:3000/verify-email/${verificationToken}`;
+        const message = `Please verify your email by clicking this link: ${verifyUrl}`;
+
+        console.log('📨 Attempting to send email to', user.email);
+        await sendEmail(user.email, 'Resend Email Verification', message);
+        console.log('✅ Email sent successfully');
+
+        res.json({ message: 'Verification email sent successfully' });
+    } catch (err) {
+        console.error('❌ Failed to resend verification:', err);
+        res.status(500).json({ message: 'Failed to resend verification email', error: err.message });
+    }
+};
 
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
@@ -110,7 +139,7 @@ const forgotPassword = async (req, res) => {
     user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 min
     await user.save();
 
-    const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
+    const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
 
     const message = `You requested a password reset.\n\nReset here: ${resetUrl}\n\nIf you didn't request this, ignore.`;
 
@@ -147,4 +176,4 @@ const resetPassword = async (req, res) => {
     res.json({ message: 'Password reset successful' });
 };
 
-module.exports = { registerUser, loginUser, forgotPassword, resetPassword, verifyEmail };
+module.exports = { registerUser, loginUser, forgotPassword, resetPassword, verifyEmail, resendVerificationEmail };
