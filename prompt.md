@@ -139,3 +139,7 @@ Okay now we gonna implement the logic for delivery rate calculation beased on to
 6. where they cant reach(1-4) they'll do dtdc - 100/kg .
 :
 so the weight will be calculated for each product & it's quantity, if the customers neeed a hamper an additional 0.25kg will be added in end weight with products. Then total weight will be calculated and based on user location delivery rate will be applicable. If the total weight sums up 1.05 kg as example it will be calculated as 2 kg means anything above 1 kg will be calculated 2kg and anything above 2kg will be calculated 3 kg and hence. 
+
+
+##
+i'm building a website for smalll business - Modest Blooming - Hijab & Other Accessories bussiness. So i created the backend now assisst me building a professional, rich looking UI with good styling and font style, etc. I'm using MERN with NextJS (basic like pages/ goes for routing ) & for styling using TailwindCSS 

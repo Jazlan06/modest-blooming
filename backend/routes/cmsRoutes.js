@@ -14,13 +14,7 @@ router.put(
     '/homepage',
     isAuthenticated,
     isAdmin,
-    parser.fields([
-        { name: 'heroBanners' },
-        { name: 'brandBanner', maxCount: 1 },
-        { name: 'bestSellerBanner', maxCount: 1 },
-        { name: 'saleBanner', maxCount: 1 },
-        { name: 'announcementImages' }
-    ]),
+    parser.any(),
     updateHomePageConfig
 );
 
