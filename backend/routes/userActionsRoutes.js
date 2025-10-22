@@ -16,7 +16,7 @@ router.post('/cart', isAuthenticated, addToCart);
 router.delete('/cart/:productId', isAuthenticated, removeFromCart);
 
 // Wishlist
-router.post('/wishlist', isAuthenticated, addToWishlist);
+router.post('/wishlist/:productId', isAuthenticated, addToWishlist);
 router.delete('/wishlist/:productId', isAuthenticated, removeFromWishlist);
 
 // Get both

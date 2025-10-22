@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { FaBars, FaHeart, FaShoppingCart, FaSearch, FaTimes, FaUserCircle } from 'react-icons/fa';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useWishlist } from '@/context/WishlistContext';
 
 export default function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -10,7 +11,9 @@ export default function Navbar() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [role, setRole] = useState(null);
+    const [wishlistCount, setWishlistCount] = useState(0);
     const inputRef = useRef(null);
+    const { wishlist } = useWishlist();
     const router = useRouter();
     const { pathname } = router;
 
@@ -24,6 +27,42 @@ export default function Navbar() {
                 const parsedUser = JSON.parse(userData);
                 setRole(parsedUser.role || null); // ✅ set role
             }
+        }
+    }, []);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const userData = localStorage.getItem('user');
+        setIsLoggedIn(!!token);
+
+        if (userData) {
+            const parsedUser = JSON.parse(userData);
+            setRole(parsedUser.role || null);
+        }
+
+        // Fetch wishlist count if logged in
+        if (token) {
+            const fetchWishlistCount = async () => {
+                try {
+                    const res = await fetch('http://localhost:5000/api/user/my', {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    });
+
+                    const data = await res.json();
+                    if (data?.wishlist && Array.isArray(data.wishlist)) {
+                        setWishlistCount(data.wishlist.length);
+                    } else {
+                        setWishlistCount(0);
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch wishlist:", err);
+                    setWishlistCount(0);
+                }
+            };
+
+            fetchWishlistCount();
         }
     }, []);
 
@@ -115,7 +154,15 @@ export default function Navbar() {
 
                         {/* Desktop Icons */}
                         <div className="flex items-center gap-6 ml-auto">
-                            <FaHeart size={26} className="cursor-pointer" />
+                            {/* Wishlist Icon with Badge */}
+                            <div className="relative">
+                                <FaHeart size={26} className="cursor-pointer" />
+                                {wishlist.length > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-white text-[#F4C2C2] text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
+                                        {wishlist.length}
+                                    </span>
+                                )}
+                            </div>
                             <FaShoppingCart size={26} className="cursor-pointer" />
                             <FaUserCircle
                                 size={28}
@@ -128,7 +175,15 @@ export default function Navbar() {
 
                     {/* === Mobile Right Icons (no profile here) === */}
                     <div className="flex items-center gap-4 md:hidden">
-                        <FaHeart size={22} className="cursor-pointer" />
+                        {/* Mobile Wishlist Icon with Badge */}
+                        <div className="relative">
+                            <FaHeart size={22} className="cursor-pointer" />
+                            {wishlist.length > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-white text-[#F4C2C2] text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
+                                    {wishlist.length}
+                                </span>
+                            )}
+                        </div>
                         <FaShoppingCart size={22} className="cursor-pointer ml-[5px]" />
                     </div>
                 </div>
