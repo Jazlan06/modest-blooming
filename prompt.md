@@ -144,27 +144,21 @@ so the weight will be calculated for each product & it's quantity, if the custom
 ##
 i'm building a website for smalll business - Modest Blooming - Hijab & Other Accessories bussiness. So i created the backend now assisst me building a professional, rich looking UI with good styling and font style, etc. I'm using MERN with NextJS (basic like pages/ goes for routing ) & for styling using TailwindCSS.So i'll paste the backend then frontend and tell what to do 
 
-#
-backend/:
+# backend/
 controllers/productController.js:
-const Product = require('../models/Product');
+#const Product = require('../models/Product');
 const slugify = require('slugify');
 const { v4: uuidv4 } = require('uuid');
 
-
+// Create Product
 const createProduct = async (req, res) => {
     try {
-        const { name, description, price, discountPrice, category, tags, colors, groupId, weight } = req.body;
+        const { name, description, price, discountPrice, category, tags, colors, groupId, weight, quantity } = req.body;
         const slug = slugify(name, { lower: true });
 
-        // Upload product images/videos
-        const media = req.files['images']?.map(file => file.path) || [];
-
-        // Parse color data from req.body.colors (should be JSON string)
+        const media = req.files?.images?.map(file => file.path) || [];
         const parsedColors = colors ? JSON.parse(colors) : [];
-
-        // Map each color with its image
-        const colorImages = req.files['colorImages'] || [];
+        const colorImages = req.files?.colorImages || [];
 
         const finalColors = parsedColors.map((color, index) => ({
             ...color,
@@ -182,28 +176,25 @@ const createProduct = async (req, res) => {
             colors: finalColors,
             media,
             groupId: groupId || uuidv4(),
-            weight: Number(weight)
+            weight: Number(weight),
+            quantity: Number(quantity) || 0
         });
 
         await product.save();
         res.status(201).json(product);
-
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: err.message });
     }
 };
 
+// Search Products
 const searchProducts = async (req, res) => {
     try {
         const query = req.query.q;
+        if (!query) return res.status(400).json({ message: 'Search query missing' });
 
-        if (!query) {
-            return res.status(400).json({ message: 'Search query missing' });
-        }
-
-        const regex = new RegExp(query, 'i'); // 'i' = case-insensitive
-
+        const regex = new RegExp(query, 'i');
         const results = await Product.find({
             $or: [
                 { name: regex },
@@ -213,6 +204,7 @@ const searchProducts = async (req, res) => {
             ]
         }).sort({ createdAt: -1 }).limit(15);
 
+        if (results.length === 0) return res.status(404).json({ message: 'No products found' });
         res.json(results);
     } catch (err) {
         console.error(err);
@@ -221,90 +213,139 @@ const searchProducts = async (req, res) => {
 };
 
 const filterProducts = async (req, res) => {
-  try {
-    const {
-      category,
-      minPrice,
-      maxPrice,
-      tags,
-      colors,
-      inStock,
-      bestSelling,
-      minWeight,
-      maxWeight
-    } = req.query;
+    console.log('FILTER QUERY:', req.query);
+    try {
+        const { category, minPrice, maxPrice, tags, colors, inStock, bestSelling, minWeight, maxWeight } = req.query;
+        const filter = {};
 
-    const filter = {};
+        // ✅ Category
+        if (category) {
+            const categoryList = category.split(',').map(c => c.trim());
+            filter.category = { $in: categoryList };
+        }
 
-    // Category filter
-    if (category) {
-      filter.category = category;
+        // ✅ Price Range
+        if (minPrice || maxPrice) {
+            const priceFilter = {};
+            if (minPrice) priceFilter.$gte = Number(minPrice);
+            if (maxPrice) priceFilter.$lte = Number(maxPrice);
+
+            // Match either main price or discount price
+            filter.$and = [
+                {
+                    $or: [
+                        { price: priceFilter },
+                        { discountPrice: priceFilter }
+                    ]
+                }
+            ];
+        }
+
+        // ✅ Tags or search keywords
+        if (tags) {
+            const tagList = tags.split(',').map(tag => tag.trim().toLowerCase());
+            filter.$and = filter.$and || [];
+            filter.$and.push({
+                $or: [
+                    { tags: { $in: tagList } },
+                    { name: { $regex: tagList.join('|'), $options: 'i' } },
+                    { description: { $regex: tagList.join('|'), $options: 'i' } }
+                ]
+            });
+        }
+
+        // ✅ Colors
+        if (colors) {
+            const colorList = colors.split(',').map(c => c.trim());
+            filter.$and = filter.$and || [];
+            filter.$and.push({ 'colors.colorName': { $in: colorList } });
+        }
+
+        // ✅ Stock status
+        if (inStock === 'true') {
+            filter.inStock = true;
+        }
+
+        // ✅ Best selling
+        if (bestSelling === 'true') {
+            filter.bestSelling = true;
+        }
+
+        // ✅ Weight range
+        if (minWeight || maxWeight) {
+            const weightFilter = {};
+            if (minWeight) weightFilter.$gte = Number(minWeight);
+            if (maxWeight) weightFilter.$lte = Number(maxWeight);
+            filter.$and = filter.$and || [];
+            filter.$and.push({ weight: weightFilter });
+        }
+
+        // 🔍 Debug log (optional)
+        console.log('Applied filters:', JSON.stringify(filter, null, 2));
+
+        const products = await Product.find(filter).sort({ createdAt: -1 });
+        res.json(products);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error while filtering products' });
     }
-
-    // Price range filter
-    if (minPrice || maxPrice) {
-      filter.discountPrice = {};
-      if (minPrice) filter.discountPrice.$gte = Number(minPrice);
-      if (maxPrice) filter.discountPrice.$lte = Number(maxPrice);
-    }
-
-    // Tags filter (comma-separated)
-    if (tags) {
-      const tagList = tags.split(',').map(tag => tag.trim());
-      filter.tags = { $in: tagList };
-    }
-
-    // Color filter (comma-separated)
-    if (colors) {
-      const colorList = colors.split(',').map(c => c.trim());
-      filter['colors.colorName'] = { $in: colorList };
-    }
-
-    // Stock filter
-    if (inStock === 'true') {
-      filter.inStock = true;
-    }
-
-    // Best selling
-    if (bestSelling === 'true') {
-      filter.bestSelling = true;
-    }
-
-    // Weight range filter
-    if (minWeight || maxWeight) {
-      filter.weight = {};
-      if (minWeight) filter.weight.$gte = Number(minWeight);
-      if (maxWeight) filter.weight.$lte = Number(maxWeight);
-    }
-
-    const products = await Product.find(filter).sort({ createdAt: -1 });
-
-    res.json(products);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
 };
 
+
+// Get Filter Options
+const getFilterOptions = async (req, res) => {
+    try {
+        const products = await Product.find();
+
+        const categoryCounts = products.reduce((acc, p) => {
+            if (p.category) acc[p.category] = (acc[p.category] || 0) + 1;
+            return acc;
+        }, {});
+        const categories = Object.entries(categoryCounts).map(([name, count]) => ({ name, count }));
+
+        const colorCounts = products.reduce((acc, p) => {
+            p.colors.forEach(c => {
+                const colorName = c.colorName?.trim();
+                if (colorName) acc[colorName] = (acc[colorName] || 0) + 1;
+            });
+            return acc;
+        }, {});
+        const colors = Object.entries(colorCounts).map(([color, count]) => ({ color, count }));
+
+        const prices = products.flatMap(p => [
+            ...(p.colors?.map(c => c.price) || []),
+            p.discountPrice,
+            p.price
+        ]).filter(Boolean);
+        const priceRange = {
+            min: prices.length ? Math.min(...prices) : 0,
+            max: prices.length ? Math.max(...prices) : 3000
+        };
+
+        const allTags = [...new Set(products.flatMap(p => p.tags || []))];
+
+        res.json({
+            categories,
+            colors,
+            priceRange,
+            tags: allTags,
+            allProducts: products
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error fetching filter options' });
+    }
+};
+
+// Clone Product Variant
 const cloneProductAsVariant = async (req, res) => {
     try {
         const originalProduct = await Product.findById(req.params.id);
-        if (!originalProduct)
-            return res.status(404).json({ message: 'Original product not found' });
+        if (!originalProduct) return res.status(404).json({ message: 'Original product not found' });
 
-        const {
-            colorName,
-            colorCode,
-            price, // optional: per-variant
-            discountPrice, // optional
-            quantity,
-            weight //optional
-        } = req.body;
+        const { colorName, colorCode, price, discountPrice, quantity, weight } = req.body;
+        const media = req.files?.images?.map(file => file.path) || [];
 
-        // Upload media (images/videos)
-        const media = req.files['images']?.map(file => file.path) || [];
-
-        // Build new color object with optional price
         const newColor = {
             colorName,
             colorCode,
@@ -318,7 +359,7 @@ const cloneProductAsVariant = async (req, res) => {
             name: originalProduct.name,
             slug: slugify(`${originalProduct.name}-${colorName}`, { lower: true }),
             description: originalProduct.description,
-            price: originalProduct.price, // fallback price
+            price: originalProduct.price,
             discountPrice: originalProduct.discountPrice,
             category: originalProduct.category,
             tags: originalProduct.tags,
@@ -331,24 +372,34 @@ const cloneProductAsVariant = async (req, res) => {
         });
 
         await newProduct.save();
-
-        res.status(201).json({
-            message: 'Variant created',
-            product: newProduct
-        });
-
+        res.status(201).json({ message: 'Variant created', product: newProduct });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
 
+// Other CRUD methods
 const getAllProducts = async (req, res) => {
     try {
-        const products = await Product.find().sort({ createdAt: -1 });
-        res.json(products);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const totalProducts = await Product.countDocuments();
+        const products = await Product.find()
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 });
+
+        res.json({
+            products,
+            totalProducts,
+            currentPage: page,
+            totalPages: Math.ceil(totalProducts / limit),
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching products', error });
     }
 };
 
@@ -381,7 +432,6 @@ const getVariantPriceById = async (req, res) => {
 
         const price = color?.price || product.price;
         const discount = color?.discountPrice || product.discountPrice;
-
         res.json({ price, discount });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -396,7 +446,6 @@ const getProductVariantWeight = async (req, res) => {
         const selectedColor = req.params.colorName;
         const color = product.colors.find(c => c.colorName === selectedColor);
         const weight = color?.weight || product.weight;
-
         res.json({ weight });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -405,15 +454,40 @@ const getProductVariantWeight = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     try {
-        const updated = await Product.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
-        );
+        const { name, description, price, discountPrice, category, tags, colors, weight, quantity } = req.body;
 
-        if (!updated) return res.status(404).json({ message: 'Product not found' });
-        res.json(updated);
+        const updatedData = {
+            name,
+            description,
+            price,
+            discountPrice,
+            category,
+            tags: tags ? JSON.parse(tags) : [],
+            colors: colors ? JSON.parse(colors) : [],
+            weight,
+            quantity,
+        };
+
+        if (req.files?.images) {
+            const newImages = req.files.images.map(file => file.path);
+            updatedData.media = [...newImages];
+        }
+
+        if (req.files?.colorImages) {
+            const newColorImages = req.files.colorImages.map(file => file.path);
+            const updatedColors = updatedData.colors.map((color, index) => ({
+                ...color,
+                image: newColorImages[index] || color.image,
+            }));
+            updatedData.colors = updatedColors;
+        }
+
+        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updatedData, { new: true });
+        if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
+
+        res.json(updatedProduct);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: err.message });
     }
 };
@@ -422,7 +496,6 @@ const deleteProduct = async (req, res) => {
     try {
         const deleted = await Product.findByIdAndDelete(req.params.id);
         if (!deleted) return res.status(404).json({ message: 'Product not found' });
-
         res.json({ message: 'Product deleted successfully' });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -433,6 +506,7 @@ module.exports = {
     createProduct,
     searchProducts,
     filterProducts,
+    getFilterOptions,
     cloneProductAsVariant,
     getAllProducts,
     getProduct,
@@ -441,7 +515,8 @@ module.exports = {
     getProductVariantWeight,
     updateProduct,
     deleteProduct
-};  
+};
+#
 middleware/productUplaods.js:
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
@@ -603,6 +678,7 @@ const {
     createProduct,
     searchProducts,
     filterProducts,
+    getFilterOptions,
     cloneProductAsVariant,
     getAllProducts,
     getProduct,
@@ -619,6 +695,7 @@ const router = express.Router();
 // Public
 router.get('/search', searchProducts);
 router.get('/filter', filterProducts);
+router.get('/filter-options', getFilterOptions);
 router.get('/', getAllProducts);
 router.get('/variants/:groupId', getProductVariants);
 router.get('/:id/weight/:colorName', getProductVariantWeight);
@@ -644,10 +721,13 @@ router.post(
     ]),
     cloneProductAsVariant
 );
-router.put('/:id', isAuthenticated, isAdmin, updateProduct);
+router.put('/:id', isAuthenticated, isAdmin, parser.fields([
+    { name: 'images' },       // for regular product images
+    { name: 'colorImages' }    // for color-specific images
+]), updateProduct);
 router.delete('/:id', isAuthenticated, isAdmin, deleteProduct);
 
-module.exports = router; 
+module.exports = router;
 server.js:
 require('dotenv').config();
 const express = require('express');
@@ -700,8 +780,7 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
 
-#
-frontend/:
+# frontend/:
 components/:
 ProductGrid.js:
 import React from 'react';
@@ -1222,3 +1301,11 @@ Improve spacing & fonts for a more premium modest vibe.
 Apply your brand color palette more cohesively.
 
 Add badges like "Best Selling", "New", etc.
+
+
+##
+Pagination: If you expect many results, consider adding pagination to avoid overwhelming the user with too many products.
+
+Search Debouncing: You might want to debounce the search query to avoid excessive requests to the backend as the user types. This can improve performance.
+
+No Results Found: Be sure to handle cases where no products match the search query gracefully, like showing a friendly message or alternative suggestions.

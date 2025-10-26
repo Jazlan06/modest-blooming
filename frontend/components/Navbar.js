@@ -140,7 +140,7 @@ export default function Navbar() {
                         {/* Nav Links */}
                         <div className="flex ml-[100px] items-center gap-8 text-lg font-medium mr-6">
                             <Link href="/" className="hover:underline focus:outline-none focus:ring-0">Home</Link>
-                            <Link href="/shop" className="hover:underline focus:outline-none focus:ring-0">Shop</Link>
+                            <Link href="/products" className="hover:underline focus:outline-none focus:ring-0">Shop</Link>
                             <Link href="/about" className="hover:underline focus:outline-none focus:ring-0">About</Link>
                             <Link href="/contact" className="hover:underline focus:outline-none focus:ring-0">Contact</Link>
 
@@ -236,7 +236,7 @@ export default function Navbar() {
                         {/* Navigation */}
                         <nav className="flex flex-col gap-6 text-lg font-semibold text-gray-800">
                             {[{ href: '/', label: 'Home' },
-                            { href: '/shop', label: 'Shop' },
+                            { href: '/products', label: 'Shop' },
                             { href: '/about', label: 'About' },
                             { href: '/contact', label: 'Contact' },
                             ...(role === 'admin'

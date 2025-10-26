@@ -3,6 +3,7 @@ const {
     createProduct,
     searchProducts,
     filterProducts,
+    getFilterOptions,
     cloneProductAsVariant,
     getAllProducts,
     getProduct,
@@ -19,6 +20,7 @@ const router = express.Router();
 // Public
 router.get('/search', searchProducts);
 router.get('/filter', filterProducts);
+router.get('/filter-options', getFilterOptions);
 router.get('/', getAllProducts);
 router.get('/variants/:groupId', getProductVariants);
 router.get('/:id/weight/:colorName', getProductVariantWeight);
@@ -44,7 +46,10 @@ router.post(
     ]),
     cloneProductAsVariant
 );
-router.put('/:id', isAuthenticated, isAdmin, updateProduct);
+router.put('/:id', isAuthenticated, isAdmin, parser.fields([
+    { name: 'images' },       // for regular product images
+    { name: 'colorImages' }    // for color-specific images
+]), updateProduct);
 router.delete('/:id', isAuthenticated, isAdmin, deleteProduct);
 
 module.exports = router;
