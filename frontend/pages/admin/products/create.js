@@ -1,11 +1,10 @@
 // pages/admin/create-product.js
-
 import { useState } from 'react';
 import axios from '@/utils/axios';
 import { useRouter } from 'next/router';
 import withAdminAuth from '@/utils/withAdminAuth';
 import Navbar from '@/components/Navbar';
-
+//working
 const CreateProduct = () => {
     const router = useRouter();
 
@@ -21,9 +20,7 @@ const CreateProduct = () => {
     });
 
     // Set default valid hex color to avoid input validation errors
-    const [colors, setColors] = useState([
-        { colorName: '', colorCode: '#000000', image: null }
-    ]);
+    const [colors, setColors] = useState([]);
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -230,55 +227,80 @@ const CreateProduct = () => {
                         />
                     </div>
 
-                    {/* Color Variants */}
-                    <div className="border p-4 rounded-md bg-gray-50">
-                        <label className="block text-lg font-medium mb-3 text-primary">Color Variants</label>
-
-                        {colors.map((color, index) => (
-                            <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center mb-4">
-                                <input
-                                    type="text"
-                                    placeholder="Color Name"
-                                    value={color.colorName}
-                                    onChange={(e) => handleColorChange(index, 'colorName', e.target.value)}
-                                    className="border border-gray-300 p-2 rounded-md"
-                                    required
-                                />
-
-                                <input
-                                    type="color"
-                                    value={color.colorCode}
-                                    onChange={(e) => handleColorChange(index, 'colorCode', e.target.value)}
-                                    className="border border-gray-300 h-10 w-full rounded-md"
-                                    required
-                                />
-
-                                <input
-                                    type="file"
-                                    accept="image/*,video/*"
-                                    onChange={(e) => handleColorImageChange(index, e.target.files[0])}
-                                    className="border border-gray-300 p-2 rounded-md"
-                                />
-
-                                <button
-                                    type="button"
-                                    onClick={() => removeColor(index)}
-                                    className="text-red-600 hover:underline text-sm"
-                                    disabled={colors.length === 1}
-                                >
-                                    Remove
-                                </button>
-                            </div>
-                        ))}
-
-                        <button
-                            type="button"
-                            onClick={addColor}
-                            className="mt-2 inline-block bg-primary text-white px-4 py-2 rounded hover:bg-opacity-90 transition"
-                        >
-                            + Add Another Color
-                        </button>
+                    {/* Toggle: Has color variants */}
+                    <div className="mt-4">
+                        <label className="inline-flex items-center">
+                            <input
+                                type="checkbox"
+                                checked={colors.length > 0}
+                                onChange={(e) =>
+                                    setColors(
+                                        e.target.checked
+                                            ? [{ colorName: '', colorCode: '#000000', image: null }]
+                                            : []
+                                    )
+                                }
+                                className="mr-2 accent-primary"
+                            />
+                            This product has color variants
+                        </label>
                     </div>
+
+                    {/* Color Variants */}
+                    {colors.length > 0 && (
+                        <div className="border p-4 rounded-md bg-gray-50 mt-4">
+                            <label className="block text-lg font-medium mb-3 text-primary">
+                                Color Variants
+                            </label>
+
+                            {colors.map((color, index) => (
+                                <div
+                                    key={index}
+                                    className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center mb-4"
+                                >
+                                    <input
+                                        type="text"
+                                        placeholder="Color Name"
+                                        value={color.colorName}
+                                        onChange={(e) => handleColorChange(index, 'colorName', e.target.value)}
+                                        className="border border-gray-300 p-2 rounded-md"
+                                    />
+
+                                    <input
+                                        type="color"
+                                        value={color.colorCode}
+                                        onChange={(e) => handleColorChange(index, 'colorCode', e.target.value)}
+                                        className="border border-gray-300 h-10 w-full rounded-md"
+                                    />
+
+                                    <input
+                                        type="file"
+                                        accept="image/*,video/*"
+                                        onChange={(e) => handleColorImageChange(index, e.target.files[0])}
+                                        className="border border-gray-300 p-2 rounded-md"
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => removeColor(index)}
+                                        className="text-red-600 hover:underline text-sm"
+                                        disabled={colors.length === 1}
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            ))}
+
+                            <button
+                                type="button"
+                                onClick={addColor}
+                                className="mt-2 inline-block bg-primary text-white px-4 py-2 rounded hover:bg-opacity-90 transition"
+                            >
+                                + Add Another Color
+                            </button>
+                        </div>
+                    )}
+
 
                     <div className="flex justify-end">
                         <button

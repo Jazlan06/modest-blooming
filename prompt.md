@@ -143,10 +143,7 @@ so the weight will be calculated for each product & it's quantity, if the custom
 
 ##
 i'm building a website for smalll business - Modest Blooming - Hijab & Other Accessories bussiness. So i created the backend now assisst me building a professional, rich looking UI with good styling and font style, etc. I'm using MERN with NextJS (basic like pages/ goes for routing ) & for styling using TailwindCSS.So i'll paste the backend then frontend and tell what to do 
-
-# backend/
-controllers/productController.js:
-#const Product = require('../models/Product');
+const Product = require('../models/Product');
 const slugify = require('slugify');
 const { v4: uuidv4 } = require('uuid');
 
@@ -177,7 +174,8 @@ const createProduct = async (req, res) => {
             media,
             groupId: groupId || uuidv4(),
             weight: Number(weight),
-            quantity: Number(quantity) || 0
+            quantity: Number(quantity) || 0,
+            isParent: true
         });
 
         await product.save();
@@ -291,7 +289,6 @@ const filterProducts = async (req, res) => {
     }
 };
 
-
 // Get Filter Options
 const getFilterOptions = async (req, res) => {
     try {
@@ -368,7 +365,9 @@ const cloneProductAsVariant = async (req, res) => {
             groupId: originalProduct.groupId || uuidv4(),
             quantity: quantity || 0,
             inStock: true,
-            weight: Number(weight) || originalProduct.weight
+            weight: Number(weight) || originalProduct.weight,
+            isParent: false,
+            parentProduct: originalProduct._id,
         });
 
         await newProduct.save();
@@ -379,6 +378,35 @@ const cloneProductAsVariant = async (req, res) => {
     }
 };
 
+// Add new color to an existing product (instead of cloning)
+const addColorToProduct = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: 'Product not found' });
+
+        const { colorName, colorCode, price, discountPrice, quantity, weight } = req.body;
+        const media = req.files?.images?.map(file => file.path) || [];
+
+        const newColor = {
+            colorName,
+            colorCode,
+            images: media, // updated to array
+            ...(price && { price: Number(price) }),
+            ...(discountPrice && { discountPrice: Number(discountPrice) }),
+            ...(weight && { weight: Number(weight) }),
+            ...(quantity && { quantity: Number(quantity) })
+        };
+
+        product.colors.push(newColor);
+        await product.save();
+
+        res.status(200).json({ message: 'Color added successfully', product });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
+};
+
 // Other CRUD methods
 const getAllProducts = async (req, res) => {
     try {
@@ -386,8 +414,8 @@ const getAllProducts = async (req, res) => {
         const limit = parseInt(req.query.limit) || 20;
         const skip = (page - 1) * limit;
 
-        const totalProducts = await Product.countDocuments();
-        const products = await Product.find()
+        const totalProducts = await Product.countDocuments({ isParent: true });
+        const products = await Product.find({ isParent: true })
             .skip(skip)
             .limit(limit)
             .sort({ createdAt: -1 });
@@ -456,35 +484,64 @@ const updateProduct = async (req, res) => {
     try {
         const { name, description, price, discountPrice, category, tags, colors, weight, quantity } = req.body;
 
+        // Parse JSON strings if needed
+        const parsedColors = colors ? JSON.parse(colors) : [];
+        const parsedTags = tags ? JSON.parse(tags) : [];
+
+        // Fetch existing product
+        const existingProduct = await Product.findById(req.params.id);
+        if (!existingProduct) return res.status(404).json({ message: 'Product not found' });
+
+        // Base updated fields
         const updatedData = {
             name,
             description,
             price,
             discountPrice,
             category,
-            tags: tags ? JSON.parse(tags) : [],
-            colors: colors ? JSON.parse(colors) : [],
+            tags: parsedTags,
             weight,
             quantity,
         };
 
+        // Handle main product images
         if (req.files?.images) {
             const newImages = req.files.images.map(file => file.path);
-            updatedData.media = [...newImages];
+            updatedData.media = newImages;
+        } else {
+            updatedData.media = existingProduct.media;
         }
 
-        if (req.files?.colorImages) {
-            const newColorImages = req.files.colorImages.map(file => file.path);
-            const updatedColors = updatedData.colors.map((color, index) => ({
+        // Handle color images
+        const uploadedColorImages = req.files?.colorImages || [];
+        let imageFileIndex = 0;
+
+        const updatedColors = parsedColors.map((color) => {
+            const oldColor = existingProduct.colors.find(c => c.colorName === color.colorName);
+
+            // Collect new images for this color
+            const newImages = [];
+            if (color.images?.length > 0) {
+                color.images.forEach(img => {
+                    // If frontend sent a File object, assign uploaded image
+                    if (img === null && uploadedColorImages[imageFileIndex]) {
+                        newImages.push(uploadedColorImages[imageFileIndex].path);
+                        imageFileIndex++;
+                    } else if (typeof img === 'string') {
+                        newImages.push(img);
+                    }
+                });
+            }
+
+            return {
                 ...color,
-                image: newColorImages[index] || color.image,
-            }));
-            updatedData.colors = updatedColors;
-        }
+                images: newImages.length > 0 ? newImages : oldColor?.images || [],
+            };
+        });
+
+        updatedData.colors = updatedColors;
 
         const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updatedData, { new: true });
-        if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
-
         res.json(updatedProduct);
     } catch (err) {
         console.error(err);
@@ -508,6 +565,7 @@ module.exports = {
     filterProducts,
     getFilterOptions,
     cloneProductAsVariant,
+    addColorToProduct,
     getAllProducts,
     getProduct,
     getProductVariants,
@@ -516,270 +574,6 @@ module.exports = {
     updateProduct,
     deleteProduct
 };
-#
-middleware/productUplaods.js:
-const multer = require('multer');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const cloudinary = require('../utils/cloudinary');
-
-// Allowed image & video types
-const allowedMimeTypes = [
-    'image/jpeg',
-    'image/png',
-    'image/webp',
-    'image/svg',
-    'image/jpg',
-    'video/mp4',
-    'video/webm',
-    'video/quicktime'
-];
-
-// Configure Cloudinary storage
-const storage = new CloudinaryStorage({
-    cloudinary,
-    params: async (req, file) => ({
-        folder: 'modest-blooming/products',
-        resource_type: 'auto',
-        format: file.mimetype.split('/')[1],
-        public_id: `${Date.now()}-${file.originalname.split('.')[0]}`
-    })
-});
-
-// Filter only accepted types
-const fileFilter = (req, file, cb) => {
-    if (allowedMimeTypes.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error('Only image and video files are allowed'), false);
-    }
-};
-
-const parser = multer({
-    storage,
-    fileFilter,
-    limits: {
-        fileSize: 10 * 1024 * 1024, // 20 MB per file
-        files: 10
-    }
-});
-
-module.exports = parser; 
-models/Product.js:
-const mongoose = require('mongoose');
-
-const productSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    slug: { type: String },
-    description: { type: String },
-    price: { type: Number, required: true },
-    discountPrice: { type: Number },
-    category: { type: String, required: true },
-    tags: [String], // for filters
-    colors: [
-        {
-            colorName: String,
-            colorCode: String,
-            image: String, // cloudinary image/video
-            price: Number,
-            discountPrice: Number,
-            weight: Number
-        }
-    ],
-    media: [String], // all images (Cloudinary URLs)
-    bestSelling: { type: Boolean, default: false },
-    quantity: {
-        type: Number,
-        default: 0
-    },
-    inStock: { type: Boolean, default: true },
-    weight: {
-        type: Number,
-        required: true,
-        min: [0.01, 'Weight must be at least 0.01kg']
-    },
-    groupId: { type: String },
-    createdAt: { type: Date, default: Date.now }
-});
-
-module.exports = mongoose.model('Product', productSchema); 
-models/User.js:
-const mongoose = require('mongoose');
-const userSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        lowercase: true
-    },
-    phone: {
-        type: String,
-        required: true,
-        match: [/^[6-9]\d{9}$/, 'Please enter a valid Indian phone number']
-    },
-    password: {
-        type: String,
-        required: true
-    },
-    role: {
-        type: String,
-        enum: ['user', 'admin'],
-        default: 'user'
-    },
-    isVerified: {
-        type: Boolean,
-        default: false
-    },
-    verificationToken: String,
-    verificationTokenExpire: Date,
-    resetPasswordToken: String,
-    resetPasswordExpire: Date,
-    cart: [
-        {
-            product: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Product'
-            },
-            quantity: {
-                type: Number,
-                default: 1
-            },
-            selectedColor: {
-                colorName: {
-                    type: String,
-                    default: null
-                },
-                colorCode: {
-                    type: String,
-                    default: null
-                }
-            }
-        }
-    ],
-    wishlist: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Product'
-        }
-    ],
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
-});
-
-module.exports = mongoose.model('User', userSchema);  
-routes/productRoutes.js:
-const express = require('express');
-const {
-    createProduct,
-    searchProducts,
-    filterProducts,
-    getFilterOptions,
-    cloneProductAsVariant,
-    getAllProducts,
-    getProduct,
-    getProductVariants,
-    getVariantPriceById,
-    getProductVariantWeight,
-    updateProduct,
-    deleteProduct
-} = require('../controllers/productController');
-
-const { isAuthenticated, isAdmin } = require('../middleware/auth');
-const parser = require('../middleware/productUpload');
-const router = express.Router();
-// Public
-router.get('/search', searchProducts);
-router.get('/filter', filterProducts);
-router.get('/filter-options', getFilterOptions);
-router.get('/', getAllProducts);
-router.get('/variants/:groupId', getProductVariants);
-router.get('/:id/weight/:colorName', getProductVariantWeight);
-router.get('/:id/price/:colorName', getVariantPriceById);
-router.get('/:id', getProduct);
-// Admin only
-router.post(
-    '/',
-    isAuthenticated,
-    isAdmin,
-    parser.fields([
-        { name: 'images' },       // main product images
-        { name: 'colorImages' }  // optional color-wise images
-    ]),
-    createProduct
-);
-router.post(
-    '/:id/clone',
-    isAuthenticated,
-    isAdmin,
-    parser.fields([
-        { name: 'images' } // variant's image(s)/video(s)
-    ]),
-    cloneProductAsVariant
-);
-router.put('/:id', isAuthenticated, isAdmin, parser.fields([
-    { name: 'images' },       // for regular product images
-    { name: 'colorImages' }    // for color-specific images
-]), updateProduct);
-router.delete('/:id', isAuthenticated, isAdmin, deleteProduct);
-
-module.exports = router;
-server.js:
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const app = express();
-const PORT = process.env.PORT || 5000;
-const cors = require('cors');
-
-const productRoutes = require('./routes/productRoutes');
-const authRoutes = require('./routes/authRoutes');
-const userActionsRoutes = require('./routes/userActionsRoutes');
-const couponRoutes = require('./routes/couponRoutes');
-const saleRoutes = require('./routes/saleRoutes');
-const cmsRoutes = require('./routes/cmsRoutes');
-const analyticsRoutes = require('./routes/analyticsRoutes');
-const feedbackRoutes = require('./routes/feedbackRoutes');
-const orderRoutes = require('./routes/orderRoutes');
-const deliveryRoutes = require('./routes/deliveryRoutes');
-const deliveryRateRoutes = require('./routes/admin/deliveryRateRoutes');
-
-app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true
-}));
-
-app.use(express.json());
-
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('✅ MongoDB connected successfully'))
-    .catch((err) => console.error('❌ MongoDB connection error:', err));
-
-
-app.get('/', (req, res) => {
-    res.send('API is running...');
-});
-
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/user', userActionsRoutes);
-app.use('/api/coupons', couponRoutes);
-app.use('/api/sales', saleRoutes);
-app.use('/api/cms', cmsRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/feedback', feedbackRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/delivery', deliveryRoutes);
-app.use('/api/admin/delivery-rates', deliveryRateRoutes);
-
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-});
-
 # frontend/:
 components/:
 ProductGrid.js:

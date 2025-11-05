@@ -15,7 +15,7 @@ const ProductList = () => {
         const fetchProducts = async () => {
             try {
                 const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/products`);
-                setProducts(res.data);
+                setProducts(Array.isArray(res.data.products) ? res.data.products : []);
             } catch (err) {
                 setError('Failed to load products');
             } finally {
@@ -85,9 +85,8 @@ const ProductList = () => {
                                         </td>
                                         <td className="py-3 px-4">
                                             <span
-                                                className={`py-1 px-3 rounded-full ${
-                                                    product.inStock ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                                                }`}
+                                                className={`py-1 px-3 rounded-full ${product.inStock ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                                    }`}
                                             >
                                                 {product.inStock ? 'In Stock' : 'Out of Stock'}
                                             </span>
@@ -101,10 +100,10 @@ const ProductList = () => {
                                                     Edit
                                                 </Link>
                                                 <Link
-                                                    href={`/admin/products/clone/${product._id}`}
+                                                    href={`/admin/products/${product._id}/colors`}
                                                     className="text-green-600 hover:underline"
                                                 >
-                                                    Clone
+                                                    Colors
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(product._id)}

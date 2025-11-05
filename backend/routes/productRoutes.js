@@ -1,10 +1,12 @@
 const express = require('express');
+const Product = require('../models/Product')
 const {
     createProduct,
     searchProducts,
     filterProducts,
     getFilterOptions,
     cloneProductAsVariant,
+    addColorToProduct,
     getAllProducts,
     getProduct,
     getProductVariants,
@@ -25,6 +27,16 @@ router.get('/', getAllProducts);
 router.get('/variants/:groupId', getProductVariants);
 router.get('/:id/weight/:colorName', getProductVariantWeight);
 router.get('/:id/price/:colorName', getVariantPriceById);
+router.get('/slug/:slug', async (req, res) => {
+    try {
+        const product = await Product.findOne({ slug: req.params.slug });
+        if (!product) return res.status(404).json({ message: 'Product not found' });
+        res.json(product);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
+
 router.get('/:id', getProduct);
 // Admin only
 router.post(
@@ -45,6 +57,13 @@ router.post(
         { name: 'images' } // variant's image(s)/video(s)
     ]),
     cloneProductAsVariant
+);
+router.post(
+    '/:id/add-color',
+    isAuthenticated,
+    isAdmin,
+    parser.fields([{ name: 'images' }]),
+    addColorToProduct
 );
 router.put('/:id', isAuthenticated, isAdmin, parser.fields([
     { name: 'images' },       // for regular product images

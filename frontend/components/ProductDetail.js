@@ -1,81 +1,252 @@
-import React, { useState } from 'react';
-import { useRouter } from 'next/router';
+import React, { useState, useEffect, useRef } from 'react';
+import Navbar from './Navbar';
+import { FaRegHeart } from 'react-icons/fa';
+import { useWishlist } from '@/context/WishlistContext';
+import { useGesture } from '@use-gesture/react';
+import { animated, useSpring } from '@react-spring/web';
 
 const ProductDetail = ({ product }) => {
-    const [selectedImage, setSelectedImage] = useState(product.media[0]);
-    const [selectedColor, setSelectedColor] = useState(product.colors[0]?.colorName);
+    const { wishlist, toggleWishlist } = useWishlist();
+    const [isZoomed, setIsZoomed] = useState(false);
+    const thumbContainerRef = useRef(null);
+    const [scrollX, setScrollX] = useState(0);
+    const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || null);
+    const [selectedImage, setSelectedImage] = useState(
+        product.colors?.[0]?.images?.[0] || product.media?.[0] || ''
+    );
 
-    const router = useRouter();
+    const basePrice = selectedColor?.price ?? product.price;
+    const discountPrice = selectedColor?.discountPrice ?? product.discountPrice ?? null;
+    const currentPrice = discountPrice || basePrice;
 
-    const handleImageChange = (image) => setSelectedImage(image);
+    const handleColorSelect = (color) => {
+        setSelectedColor(color);
+        if (color?.images?.length > 0) {
+            setSelectedImage(color.images[0]);
+        } else {
+            setSelectedImage(product.media?.[0] || '');
+        }
+    };
+
+    const handleImageSelect = (image) => setSelectedImage(image);
+
+    const scrollThumbnails = (direction) => {
+        const container = thumbContainerRef.current;
+        if (!container) return;
+
+        const scrollAmount = 100; // Adjust as needed
+        if (direction === 'left') {
+            container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        } else {
+            container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    };
+
+    useEffect(() => {
+        if (selectedColor?.images?.length > 0) {
+            setSelectedImage(selectedColor.images[0]);
+        } else {
+            setSelectedImage(product.media?.[0] || '');
+        }
+    }, [selectedColor, product.media]);
+
+    const galleryImages = [
+        ...(selectedColor?.images?.length ? selectedColor.images : []),
+        ...(product.media?.filter((m) => !(selectedColor?.images || []).includes(m)) || []),
+    ];
+
+    const isInWishlist = wishlist.includes(product._id);
+
+    // ===== react-spring + use-gesture for zoom =====
+    const [{ x, y, scale }, api] = useSpring(() => ({
+        x: 0,
+        y: 0,
+        scale: 1,
+        config: { tension: 300, friction: 30 },
+    }));
+
+    const imgRef = useRef(null);
+
+    // Calculate boundaries based on scale
+    const getBoundaries = () => {
+        if (!imgRef.current) return { xMax: 0, xMin: 0, yMax: 0, yMin: 0 };
+        const rect = imgRef.current.getBoundingClientRect();
+        const containerWidth = window.innerWidth * 0.95;
+        const containerHeight = window.innerHeight * 0.9;
+        const extraX = (rect.width * scale.get() - containerWidth) / 2;
+        const extraY = (rect.height * scale.get() - containerHeight) / 2;
+        return {
+            xMin: -Math.max(extraX, 0),
+            xMax: Math.max(extraX, 0),
+            yMin: -Math.max(extraY, 0),
+            yMax: Math.max(extraY, 0),
+        };
+    };
+
+    const bind = useGesture(
+        {
+            onDrag: ({ offset: [dx, dy] }) => {
+                const { xMin, xMax, yMin, yMax } = getBoundaries();
+                api.start({
+                    x: Math.min(Math.max(dx, xMin), xMax),
+                    y: Math.min(Math.max(dy, yMin), yMax),
+                });
+            },
+            onPinch: ({ offset: [s] }) => {
+                const { xMin, xMax, yMin, yMax } = getBoundaries();
+                api.start({
+                    scale: s,
+                    x: Math.min(Math.max(x.get(), xMin), xMax),
+                    y: Math.min(Math.max(y.get(), yMin), yMax),
+                });
+            },
+        },
+        {
+            drag: { from: () => [x.get(), y.get()] },
+            pinch: { scaleBounds: { min: 1, max: 3 }, from: () => [scale.get()] },
+        }
+    );
+
+    const handleImageClick = () => setIsZoomed(true);
+    const handleCloseZoom = () => {
+        setIsZoomed(false);
+        api.start({ x: 0, y: 0, scale: 1 });
+    };
+
+    // Double-tap detection
+    const lastTapRef = useRef(0);
+    const handleDoubleTap = () => {
+        const now = Date.now();
+        if (now - lastTapRef.current < 300) {
+            api.start({ scale: scale.get() === 1 ? 2 : 1, x: 0, y: 0 });
+        }
+        lastTapRef.current = now;
+    };
 
     return (
-        <section className="py-16 bg-white">
-            <div className="max-w-7xl mx-auto px-4">
-                {/* Product Image Carousel */}
-                <div className="flex flex-col md:flex-row items-center justify-center gap-8">
-                    <div className="flex-1">
-                        <div className="relative">
-                            <img
-                                src={selectedImage}
-                                alt={product.name}
-                                className="w-full h-[400px] object-cover rounded-lg shadow-lg transition-transform duration-300 ease-in-out hover:scale-105"
-                            />
-                        </div>
-                        <div className="flex justify-center gap-4 mt-4">
-                            {product.media.map((image, index) => (
+        <>
+            <Navbar />
+            <section className="mt-[7rem] md:mt-[10rem] bg-white transition-all duration-300">
+                <div className="max-w-7xl mx-auto px-4">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-center gap-10">
+                        {/* 🖼️ Product Image Section */}
+                        <div className="flex-1">
+                            <div
+                                className="relative overflow-hidden rounded-lg shadow-lg cursor-zoom-in"
+                                onClick={handleImageClick}
+                            >
                                 <img
-                                    key={index}
-                                    src={image}
-                                    alt={`image-${index}`}
-                                    onClick={() => handleImageChange(image)}
-                                    className="w-20 h-20 object-cover rounded-lg cursor-pointer transition-transform duration-200 transform hover:scale-110"
+                                    key={selectedImage}
+                                    src={selectedImage}
+                                    alt={`${product.name} ${selectedColor?.colorName || ''}`}
+                                    className="w-[380px] h-[420px] sm:w-[900px] md:w-[600px] object-fill md:object-fill rounded-lg transition-all duration-500 ease-in-out"
                                 />
-                            ))}
-                        </div>
-                    </div>
+                            </div>
 
-                    {/* Product Details */}
-                    <div className="flex-1">
-                        <h1 className="text-4xl font-semibold text-primary">{product.name}</h1>
-                        <div className="flex items-center mt-2">
-                            <p className="text-2xl font-bold text-accent">
-                                ₹{product.discountPrice || product.price}
-                            </p>
-                            {product.discountPrice && (
-                                <span className="text-xl text-gray-600 line-through ml-2">
-                                    ₹{product.price}
-                                </span>
+                            {/* 🩶 Thumbnails */}
+                            {galleryImages.length > 0 && (
+                                <div className="flex justify-center gap-3 mt-4 flex-wrap">
+                                    {galleryImages.map((image, i) => (
+                                        <img
+                                            key={i}
+                                            src={image}
+                                            alt={`thumb-${i}`}
+                                            onClick={() => handleImageSelect(image)}
+                                            className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-2 ${selectedImage === image ? 'border-accent scale-105' : 'border-transparent'
+                                                } transition-all duration-200 hover:scale-110`}
+                                        />
+                                    ))}
+                                </div>
                             )}
                         </div>
-                        <p className="text-gray-700 mt-4">{product.description}</p>
 
-                        {/* Color/Variant Selector */}
-                        <div className="mt-6">
-                            <h4 className="text-xl font-semibold text-primary">Choose Color</h4>
-                            <div className="flex gap-4 mt-4">
-                                {product.colors.map(color => (
-                                    <button
-                                        key={color.colorName}
-                                        className={`w-10 h-10 rounded-full ${color.colorCode} border-2 ${selectedColor === color.colorName ? 'border-accent' : 'border-transparent'}`}
-                                        onClick={() => setSelectedColor(color.colorName)}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Add to Cart */}
-                        <div className="mt-6">
-                            <button
-                                className="w-full py-3 bg-accent text-white rounded-lg text-lg font-bold transition duration-300 hover:bg-primary"
+                        {/* 🔍 Zoom Modal */}
+                        {isZoomed && (
+                            <div
+                                onClick={handleCloseZoom}
+                                className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 cursor-zoom-out"
                             >
-                                Add to Cart
-                            </button>
+                                <animated.img
+                                    ref={imgRef}
+                                    {...bind()}
+                                    src={selectedImage}
+                                    alt="Zoomed product"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDoubleTap();
+                                    }}
+                                    style={{
+                                        x,
+                                        y,
+                                        scale,
+                                        touchAction: 'none',
+                                        maxWidth: '95%',
+                                        maxHeight: '90vh',
+                                    }}
+                                    className="rounded-lg"
+                                />
+                            </div>
+                        )}
+
+                        {/* 🛍️ Product Details */}
+                        <div className="flex-1">
+                            <h1 className="text-4xl font-semibold text-primary">{product.name}</h1>
+                            <div className="flex items-center mt-3 gap-2">
+                                <p className="text-3xl md:text-4xl font-bold text-accent">₹{currentPrice}</p>
+                                {selectedColor?.discountPrice && (
+                                    <span className="text-lg text-gray-500 line-through">₹{basePrice}</span>
+                                )}
+                            </div>
+                            <p className="text-gray-700 mt-4 leading-relaxed">{product.description}</p>
+
+                            {product.colors?.some(c => c.colorName || (c.images?.length > 0)) && (
+                                <div className="mt-6">
+                                    <h4 className="text-xl font-semibold text-primary mb-2">Available Colors</h4>
+                                    <div className="flex flex-wrap gap-3">
+                                        {product.colors
+                                            .filter(c => c.colorName || (c.images?.length > 0))
+                                            .map((color) => (
+                                                <button
+                                                    key={color.colorName || color.colorCode}
+                                                    title={color.colorName}
+                                                    onClick={() => handleColorSelect(color)}
+                                                    className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${selectedColor?.colorName === color.colorName
+                                                            ? 'border-accent ring-2 ring-accent scale-110'
+                                                            : 'border-gray-300 hover:scale-110'
+                                                        }`}
+                                                    style={{ backgroundColor: color.colorCode }}
+                                                />
+                                            ))}
+                                    </div>
+                                    {selectedColor?.colorName && (
+                                        <p className="mt-2 text-gray-600 text-sm">
+                                            Selected: <span className="font-medium">{selectedColor.colorName}</span>
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
+
+                            <div className="mt-8 flex items-center gap-3">
+                                <button className="flex-1 py-3 bg-accent min-w-[320px] text-white rounded-lg text-lg font-bold transition hover:bg-primary">
+                                    Add to Cart
+                                </button>
+                                <button
+                                    onClick={() => toggleWishlist(product._id)}
+                                    aria-label="Toggle wishlist"
+                                    className="p-3 rounded-lg border border-gray-300 hover:shadow-md transition"
+                                >
+                                    <FaRegHeart
+                                        className="text-2xl transition-colors duration-300"
+                                        style={{ color: isInWishlist ? '#F4C2C2' : 'rgba(0, 0, 0, 0.4)' }}
+                                    />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </>
     );
 };
 

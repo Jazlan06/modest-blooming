@@ -29,7 +29,8 @@ const createProduct = async (req, res) => {
             media,
             groupId: groupId || uuidv4(),
             weight: Number(weight),
-            quantity: Number(quantity) || 0
+            quantity: Number(quantity) || 0,
+            isParent: true
         });
 
         await product.save();
@@ -219,7 +220,9 @@ const cloneProductAsVariant = async (req, res) => {
             groupId: originalProduct.groupId || uuidv4(),
             quantity: quantity || 0,
             inStock: true,
-            weight: Number(weight) || originalProduct.weight
+            weight: Number(weight) || originalProduct.weight,
+            isParent: false,
+            parentProduct: originalProduct._id,
         });
 
         await newProduct.save();
@@ -230,6 +233,35 @@ const cloneProductAsVariant = async (req, res) => {
     }
 };
 
+// Add new color to an existing product (instead of cloning)
+const addColorToProduct = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: 'Product not found' });
+
+        const { colorName, colorCode, price, discountPrice, quantity, weight } = req.body;
+        const media = req.files?.images?.map(file => file.path) || [];
+
+        const newColor = {
+            colorName,
+            colorCode,
+            images: media, // updated to array
+            ...(price && { price: Number(price) }),
+            ...(discountPrice && { discountPrice: Number(discountPrice) }),
+            ...(weight && { weight: Number(weight) }),
+            ...(quantity && { quantity: Number(quantity) })
+        };
+
+        product.colors.push(newColor);
+        await product.save();
+
+        res.status(200).json({ message: 'Color added successfully', product });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
+};
+
 // Other CRUD methods
 const getAllProducts = async (req, res) => {
     try {
@@ -237,8 +269,8 @@ const getAllProducts = async (req, res) => {
         const limit = parseInt(req.query.limit) || 20;
         const skip = (page - 1) * limit;
 
-        const totalProducts = await Product.countDocuments();
-        const products = await Product.find()
+        const totalProducts = await Product.countDocuments({ isParent: true });
+        const products = await Product.find({ isParent: true })
             .skip(skip)
             .limit(limit)
             .sort({ createdAt: -1 });
@@ -307,35 +339,64 @@ const updateProduct = async (req, res) => {
     try {
         const { name, description, price, discountPrice, category, tags, colors, weight, quantity } = req.body;
 
+        // Parse JSON strings if needed
+        const parsedColors = colors ? JSON.parse(colors) : [];
+        const parsedTags = tags ? JSON.parse(tags) : [];
+
+        // Fetch existing product
+        const existingProduct = await Product.findById(req.params.id);
+        if (!existingProduct) return res.status(404).json({ message: 'Product not found' });
+
+        // Base updated fields
         const updatedData = {
             name,
             description,
             price,
             discountPrice,
             category,
-            tags: tags ? JSON.parse(tags) : [],
-            colors: colors ? JSON.parse(colors) : [],
+            tags: parsedTags,
             weight,
             quantity,
         };
 
+        // Handle main product images
         if (req.files?.images) {
             const newImages = req.files.images.map(file => file.path);
-            updatedData.media = [...newImages];
+            updatedData.media = newImages;
+        } else {
+            updatedData.media = existingProduct.media;
         }
 
-        if (req.files?.colorImages) {
-            const newColorImages = req.files.colorImages.map(file => file.path);
-            const updatedColors = updatedData.colors.map((color, index) => ({
+        // Handle color images
+        const uploadedColorImages = req.files?.colorImages || [];
+        let imageFileIndex = 0;
+
+        const updatedColors = parsedColors.map((color) => {
+            const oldColor = existingProduct.colors.find(c => c.colorName === color.colorName);
+
+            // Collect new images for this color
+            const newImages = [];
+            if (color.images?.length > 0) {
+                color.images.forEach(img => {
+                    // If frontend sent a File object, assign uploaded image
+                    if (img === null && uploadedColorImages[imageFileIndex]) {
+                        newImages.push(uploadedColorImages[imageFileIndex].path);
+                        imageFileIndex++;
+                    } else if (typeof img === 'string') {
+                        newImages.push(img);
+                    }
+                });
+            }
+
+            return {
                 ...color,
-                image: newColorImages[index] || color.image,
-            }));
-            updatedData.colors = updatedColors;
-        }
+                images: newImages.length > 0 ? newImages : oldColor?.images || [],
+            };
+        });
+
+        updatedData.colors = updatedColors;
 
         const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updatedData, { new: true });
-        if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
-
         res.json(updatedProduct);
     } catch (err) {
         console.error(err);
@@ -359,6 +420,7 @@ module.exports = {
     filterProducts,
     getFilterOptions,
     cloneProductAsVariant,
+    addColorToProduct,
     getAllProducts,
     getProduct,
     getProductVariants,

@@ -12,12 +12,15 @@ const productSchema = new mongoose.Schema({
         {
             colorName: String,
             colorCode: String,
-            image: String, // cloudinary image/video
+            images: { type: [String], default: [] }, 
             price: Number,
             discountPrice: Number,
-            weight: Number
+            weight: Number,
+            quantity: Number
         }
     ],
+    isParent: { type: Boolean, default: true },
+    parentProduct: { type: mongoose.Schema.Types.ObjectId, ref: "Product", default: null },
     media: [String], // all images (Cloudinary URLs)
     bestSelling: { type: Boolean, default: false },
     quantity: {
