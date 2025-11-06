@@ -147,7 +147,13 @@ const filterProducts = async (req, res) => {
 // Get Filter Options
 const getFilterOptions = async (req, res) => {
     try {
-        const products = await Product.find();
+        // ✅ Apply correct filter
+        const filter = {};
+        if (req.query.bestSelling === 'true') {
+            filter.bestSelling = true;
+        }
+
+        const products = await Product.find(filter); // <-- FIXED
 
         const categoryCounts = products.reduce((acc, p) => {
             if (p.category) acc[p.category] = (acc[p.category] || 0) + 1;
@@ -156,7 +162,7 @@ const getFilterOptions = async (req, res) => {
         const categories = Object.entries(categoryCounts).map(([name, count]) => ({ name, count }));
 
         const colorCounts = products.reduce((acc, p) => {
-            p.colors.forEach(c => {
+            (p.colors || []).forEach(c => {
                 const colorName = c.colorName?.trim();
                 if (colorName) acc[colorName] = (acc[colorName] || 0) + 1;
             });
@@ -164,14 +170,17 @@ const getFilterOptions = async (req, res) => {
         }, {});
         const colors = Object.entries(colorCounts).map(([color, count]) => ({ color, count }));
 
-        const prices = products.flatMap(p => [
-            ...(p.colors?.map(c => c.price) || []),
-            p.discountPrice,
-            p.price
-        ]).filter(Boolean);
+        const prices = products
+            .flatMap(p => [
+                ...(p.colors?.map(c => c.price) || []),
+                p.discountPrice,
+                p.price
+            ])
+            .filter(Boolean);
+
         const priceRange = {
             min: prices.length ? Math.min(...prices) : 0,
-            max: prices.length ? Math.max(...prices) : 3000
+            max: prices.length ? Math.max(...prices) : 3000,
         };
 
         const allTags = [...new Set(products.flatMap(p => p.tags || []))];
@@ -181,10 +190,10 @@ const getFilterOptions = async (req, res) => {
             colors,
             priceRange,
             tags: allTags,
-            allProducts: products
+            allProducts: products,
         });
     } catch (err) {
-        console.error(err);
+        console.error('Error in getFilterOptions:', err);
         res.status(500).json({ message: 'Server error fetching filter options' });
     }
 };
@@ -269,8 +278,14 @@ const getAllProducts = async (req, res) => {
         const limit = parseInt(req.query.limit) || 20;
         const skip = (page - 1) * limit;
 
-        const totalProducts = await Product.countDocuments({ isParent: true });
-        const products = await Product.find({ isParent: true })
+        // ✅ Apply proper filter
+        const filter = { isParent: true };
+        if (req.query.bestSelling === 'true') {
+            filter.bestSelling = true;
+        }
+
+        const totalProducts = await Product.countDocuments(filter);
+        const products = await Product.find(filter)
             .skip(skip)
             .limit(limit)
             .sort({ createdAt: -1 });
@@ -282,6 +297,7 @@ const getAllProducts = async (req, res) => {
             totalPages: Math.ceil(totalProducts / limit),
         });
     } catch (error) {
+        console.error("Error fetching products:", error);
         res.status(500).json({ message: 'Error fetching products', error });
     }
 };

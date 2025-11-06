@@ -15,16 +15,30 @@ const Filter = ({ filterOptions }) => {
     const [bestSelling, setBestSelling] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
-
+    //was working for /products
     const updateFilters = () => {
-        const filterParams = new URLSearchParams();
+        const filterParams = new URLSearchParams(router.query);
+
         if (category && category.length) filterParams.set('category', category.join(','));
+        else filterParams.delete('category');
+
         if (minPrice) filterParams.set('minPrice', minPrice);
+        else filterParams.delete('minPrice');
+
         if (maxPrice) filterParams.set('maxPrice', maxPrice);
+        else filterParams.delete('maxPrice');
+
         if (tags) filterParams.set('tags', tags);
+        else filterParams.delete('tags');
+
         if (selectedColors.length) filterParams.set('colors', selectedColors.join(','));
+        else filterParams.delete('colors');
+
         if (inStock) filterParams.set('inStock', inStock);
+        else filterParams.delete('inStock');
+
         if (bestSelling) filterParams.set('bestSelling', bestSelling);
+        else filterParams.delete('bestSelling');
 
         // Always reset to page 1 on filter change
         filterParams.set('page', 1);
@@ -34,7 +48,6 @@ const Filter = ({ filterOptions }) => {
             query: Object.fromEntries(filterParams.entries()),
         });
     };
-
 
     const handleTagSearch = (event) => {
         const searchQuery = event.target.value;
@@ -59,9 +72,17 @@ const Filter = ({ filterOptions }) => {
         if (formattedTags) {
             router.push({
                 pathname: router.pathname,
-                query: { ...router.query, tags: formattedTags }
+                query: { ...router.query, tags: formattedTags, page: 1 },
+            });
+        } else {
+            const newQuery = { ...router.query };
+            delete newQuery.tags;
+            router.push({
+                pathname: router.pathname,
+                query: newQuery,
             });
         }
+
     };
 
     const handleColorChange = (color) => {
