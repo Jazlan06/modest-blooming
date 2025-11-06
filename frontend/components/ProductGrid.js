@@ -29,7 +29,7 @@ const ProductGrid = ({ products }) => {
                                                 product.colors?.[0]?.images?.[0]
                                             }
                                             alt={product.name}
-                                            className="w-full h-48 object-cover transition duration-300 ease-in-out hover:scale-110"
+                                            className="w-full h-48 object-fill transition duration-300 ease-in-out hover:scale-110"
                                         />
                                     </div>
 

@@ -68,7 +68,7 @@ const searchProducts = async (req, res) => {
 const filterProducts = async (req, res) => {
     console.log('FILTER QUERY:', req.query);
     try {
-        const { category, minPrice, maxPrice, tags, colors, inStock, bestSelling, minWeight, maxWeight } = req.query;
+        const { category, minPrice, maxPrice, tags, colors, inStock, bestSelling, newArrival, minWeight, maxWeight } = req.query;
         const filter = {};
 
         // ✅ Category
@@ -124,6 +124,14 @@ const filterProducts = async (req, res) => {
             filter.bestSelling = true;
         }
 
+        // ✅ New arrivals (last 30 days)
+        if (newArrival === 'true') {
+            const THIRTY_DAYS_AGO = new Date();
+            THIRTY_DAYS_AGO.setDate(THIRTY_DAYS_AGO.getDate() - 30);
+            filter.$and = filter.$and || [];
+            filter.$and.push({ createdAt: { $gte: THIRTY_DAYS_AGO } });
+        }
+
         // ✅ Weight range
         if (minWeight || maxWeight) {
             const weightFilter = {};
@@ -133,7 +141,7 @@ const filterProducts = async (req, res) => {
             filter.$and.push({ weight: weightFilter });
         }
 
-        // 🔍 Debug log (optional)
+        // 🔍 Debug log
         console.log('Applied filters:', JSON.stringify(filter, null, 2));
 
         const products = await Product.find(filter).sort({ createdAt: -1 });
@@ -151,6 +159,12 @@ const getFilterOptions = async (req, res) => {
         const filter = {};
         if (req.query.bestSelling === 'true') {
             filter.bestSelling = true;
+        }
+
+        if (req.query.newArrival === 'true') {
+            const THIRTY_DAYS_AGO = new Date();
+            THIRTY_DAYS_AGO.setDate(THIRTY_DAYS_AGO.getDate() - 30);
+            filter.createdAt = { $gte: THIRTY_DAYS_AGO };
         }
 
         const products = await Product.find(filter); // <-- FIXED
@@ -282,6 +296,12 @@ const getAllProducts = async (req, res) => {
         const filter = { isParent: true };
         if (req.query.bestSelling === 'true') {
             filter.bestSelling = true;
+        }
+
+        if (req.query.newArrival === 'true') {
+            const THIRTY_DAYS_AGO = new Date();
+            THIRTY_DAYS_AGO.setDate(THIRTY_DAYS_AGO.getDate() - 30);
+            filter.createdAt = { $gte: THIRTY_DAYS_AGO };
         }
 
         const totalProducts = await Product.countDocuments(filter);
