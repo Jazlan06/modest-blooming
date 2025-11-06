@@ -51,7 +51,7 @@ export default function HomepageCMSAdmin() {
             try {
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`);
                 const data = await res.json();
-                setAllProducts(data || []);
+                setAllProducts(Array.isArray(data) ? data : data.products || []);
             } catch (err) {
                 console.error('Failed to fetch products:', err);
             } finally {

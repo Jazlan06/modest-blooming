@@ -4,12 +4,12 @@ import { FaRegHeart } from 'react-icons/fa';
 import { useWishlist } from '@/context/WishlistContext';
 import { useGesture } from '@use-gesture/react';
 import { animated, useSpring } from '@react-spring/web';
+import ProductFeedback from './ProductFeedback';
+import RecommendedProducts from './RecommendedProducts';
 
-const ProductDetail = ({ product }) => {
+const ProductDetail = ({ product, user }) => {
     const { wishlist, toggleWishlist } = useWishlist();
     const [isZoomed, setIsZoomed] = useState(false);
-    const thumbContainerRef = useRef(null);
-    const [scrollX, setScrollX] = useState(0);
     const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || null);
     const [selectedImage, setSelectedImage] = useState(
         product.colors?.[0]?.images?.[0] || product.media?.[0] || ''
@@ -29,18 +29,6 @@ const ProductDetail = ({ product }) => {
     };
 
     const handleImageSelect = (image) => setSelectedImage(image);
-
-    const scrollThumbnails = (direction) => {
-        const container = thumbContainerRef.current;
-        if (!container) return;
-
-        const scrollAmount = 100; // Adjust as needed
-        if (direction === 'left') {
-            container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-        } else {
-            container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        }
-    };
 
     useEffect(() => {
         if (selectedColor?.images?.length > 0) {
@@ -211,8 +199,8 @@ const ProductDetail = ({ product }) => {
                                                     title={color.colorName}
                                                     onClick={() => handleColorSelect(color)}
                                                     className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${selectedColor?.colorName === color.colorName
-                                                            ? 'border-accent ring-2 ring-accent scale-110'
-                                                            : 'border-gray-300 hover:scale-110'
+                                                        ? 'border-accent ring-2 ring-accent scale-110'
+                                                        : 'border-gray-300 hover:scale-110'
                                                         }`}
                                                     style={{ backgroundColor: color.colorCode }}
                                                 />
@@ -246,6 +234,13 @@ const ProductDetail = ({ product }) => {
                     </div>
                 </div>
             </section>
+
+            <ProductFeedback productId={product._id} userId={user?.id} />
+
+            <RecommendedProducts
+                category={product.category}
+                currentProductId={product._id}
+            />
         </>
     );
 };

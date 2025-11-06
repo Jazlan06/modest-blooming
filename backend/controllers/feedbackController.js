@@ -134,7 +134,7 @@ exports.getAllFeedback = async (req, res) => {
     try {
         const feedback = await Feedback.find()
             .populate('user', 'name email')
-            .populate('product', 'title')
+            .populate('product', 'name')
             .sort({ createdAt: -1 });
 
         res.json(feedback);
