@@ -182,13 +182,49 @@ exports.getMyOrders = async (req, res) => {
 
 exports.getAllOrders = async (req, res) => {
     try {
-        const orders = await Order.find()
+        const { page = 1, limit = 15, status, customer, dateFrom, dateTo } = req.query;
+
+        const query = {};
+
+        // Filter by status
+        if (status) query.status = status;
+
+        // Filter by customer name/email
+        if (customer) {
+            query.$or = [
+                { 'user.name': { $regex: customer, $options: 'i' } },
+                { 'user.email': { $regex: customer, $options: 'i' } },
+            ];
+        }
+
+        // Filter by date range
+        if (dateFrom || dateTo) {
+            query.createdAt = {};
+            if (dateFrom) query.createdAt.$gte = new Date(dateFrom);
+            if (dateTo) query.createdAt.$lte = new Date(dateTo);
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        // Count total documents matching the filters
+        const totalOrders = await Order.countDocuments(query);
+
+        // Fetch paginated orders
+        const orders = await Order.find(query)
             .populate('user', 'name email')
             .populate('products.product', 'title')
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
 
-        res.json(orders);
+        res.json({
+            orders,
+            totalPages: Math.ceil(totalOrders / limit),
+            currentPage: parseInt(page),
+            totalOrders
+        });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 };
