@@ -32,11 +32,31 @@ const deleteSale = async (req, res) => {
     }
 };
 
-//  Get All Sales
+// Get All Sales with pagination & search
 const getAllSales = async (req, res) => {
     try {
-        const sales = await Sale.find().sort({ startDate: -1 });
-        res.json(sales);
+        let { page = 1, limit = 5, search = "" } = req.query;
+        page = parseInt(page);
+        limit = parseInt(limit);
+
+        const query = search
+            ? { title: { $regex: search, $options: "i" } }
+            : {};
+
+        const total = await Sale.countDocuments(query);
+        const sales = await Sale.find(query)
+            .sort({ startDate: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        res.json({
+            sales,
+            pagination: {
+                total,
+                page,
+                pages: Math.ceil(total / limit),
+            },
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
