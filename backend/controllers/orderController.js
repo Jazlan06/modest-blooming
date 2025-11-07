@@ -1,17 +1,18 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const User = require('../models/User');
 const sendEmail = require('../utils/sendEmail');
 const { calculateDeliveryCharge } = require('../helpers/calculateDeliveryCharge');
 
 const formatReadableDate = (date) => {
-  const options = {
-    day: 'numeric',
-    month: 'long',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
-  };
-  return new Intl.DateTimeFormat('en-IN', options).format(date);
+    const options = {
+        day: 'numeric',
+        month: 'long',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    };
+    return new Intl.DateTimeFormat('en-IN', options).format(date);
 };
 
 exports.placeOrder = async (req, res) => {
@@ -77,34 +78,34 @@ exports.placeOrder = async (req, res) => {
 };
 
 exports.updateOrderStatus = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
 
-    const order = await Order.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true }
-    )
-      .populate('user', 'name email phone')
-      .populate('products.product', 'name');
+        const order = await Order.findByIdAndUpdate(
+            id,
+            { status },
+            { new: true }
+        )
+            .populate('user', 'name email phone')
+            .populate('products.product', 'name');
 
-    if (!order) return res.status(404).json({ message: 'Order not found' });
+        if (!order) return res.status(404).json({ message: 'Order not found' });
 
-    const user = order.user;
-    const formattedTime = formatReadableDate(new Date());
+        const user = order.user;
+        const formattedTime = formatReadableDate(new Date());
 
-    const productSummary = order.products.map(p => {
-      return `- ${p.product?.name || 'Product'} x ${p.quantity} (${p.selectedVariant || 'Default'})`;
-    }).join('\n');
+        const productSummary = order.products.map(p => {
+            return `- ${p.product?.name || 'Product'} x ${p.quantity} (${p.selectedVariant || 'Default'})`;
+        }).join('\n');
 
-    // Email content to customer
-    let subject = '';
-    let body = '';
+        // Email content to customer
+        let subject = '';
+        let body = '';
 
-    if (status === 'shipped') {
-      subject = 'Your order has been shipped 📦';
-      body = `
+        if (status === 'shipped') {
+            subject = 'Your order has been shipped 📦';
+            body = `
 Hi ${user.name},
 
 Good news! Your order has been shipped on ${formattedTime}.
@@ -116,11 +117,11 @@ We’ll update you once it has been delivered.
 
 Thanks for shopping with Modest Blooming 🌸
       `;
-    }
+        }
 
-    if (status === 'completed') {
-      subject = 'Your order has been delivered ✅';
-      body = `
+        if (status === 'completed') {
+            subject = 'Your order has been delivered ✅';
+            body = `
 Hi ${user.name},
 
 Your order has been marked as delivered on ${formattedTime}.
@@ -135,11 +136,11 @@ Feel free to leave feedback or reach out if anything's not right.
 With gratitude,  
 Modest Blooming 🌸
       `;
-    }
+        }
 
-    if (status === 'cancelled') {
-      subject = 'Your order has been cancelled ❌';
-      body = `
+        if (status === 'cancelled') {
+            subject = 'Your order has been cancelled ❌';
+            body = `
 Hi ${user.name},
 
 We regret to inform you that your order was cancelled as of ${formattedTime}.
@@ -153,19 +154,19 @@ We're sorry for the inconvenience and hope to serve you better next time.
 
 - Team Modest Blooming 🌸
       `;
+        }
+
+        // Send email to customer if applicable
+        if (['shipped', 'completed', 'cancelled'].includes(status)) {
+            await sendEmail(user.email, subject, body.trim());
+        }
+
+        res.json({ message: 'Order status updated', order });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
     }
-
-    // Send email to customer if applicable
-    if (['shipped', 'completed', 'cancelled'].includes(status)) {
-      await sendEmail(user.email, subject, body.trim());
-    }
-
-    res.json({ message: 'Order status updated', order });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
 };
 
 exports.getMyOrders = async (req, res) => {
@@ -191,10 +192,16 @@ exports.getAllOrders = async (req, res) => {
 
         // Filter by customer name/email
         if (customer) {
-            query.$or = [
-                { 'user.name': { $regex: customer, $options: 'i' } },
-                { 'user.email': { $regex: customer, $options: 'i' } },
-            ];
+            // Find user IDs that match name or email
+            const matchingUsers = await User.find({
+                $or: [
+                    { name: { $regex: customer, $options: 'i' } },
+                    { email: { $regex: customer, $options: 'i' } },
+                ],
+            }).select('_id');
+
+            const userIds = matchingUsers.map(u => u._id);
+            query.user = { $in: userIds };
         }
 
         // Filter by date range
@@ -212,7 +219,7 @@ exports.getAllOrders = async (req, res) => {
         // Fetch paginated orders
         const orders = await Order.find(query)
             .populate('user', 'name email')
-            .populate('products.product', 'title')
+            .populate('products.product', 'name')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(parseInt(limit));

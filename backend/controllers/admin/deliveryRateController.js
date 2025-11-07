@@ -6,11 +6,24 @@ exports.getAllZones = async (req, res) => {
 };
 
 exports.updateZoneRate = async (req, res) => {
-  const { id } = req.params;
-  const { rate } = req.body;
+  try {
+    const { id } = req.params;
+    const { name, keywords, rate } = req.body;
 
-  const updated = await DeliveryZone.findByIdAndUpdate(id, { rate }, { new: true });
-  res.json({ success: true, data: updated });
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (rate !== undefined) updateData.rate = rate;
+    if (keywords !== undefined)
+      updateData.keywords = Array.isArray(keywords)
+        ? keywords
+        : keywords.split(',').map((k) => k.trim());
+
+    const updated = await DeliveryZone.findByIdAndUpdate(id, updateData, { new: true });
+    res.json({ success: true, data: updated });
+  } catch (err) {
+    console.error("Error updating zone:", err);
+    res.status(500).json({ success: false, message: "Failed to update zone" });
+  }
 };
 
 exports.createZone = async (req, res) => {

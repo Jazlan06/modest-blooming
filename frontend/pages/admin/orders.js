@@ -10,7 +10,6 @@ export default function OrderManagementPage() {
     const today = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(today.getDate() - 30);
-
     const formatDate = (date) => date.toISOString().split("T")[0];
 
     const [orders, setOrders] = useState([]);
@@ -18,6 +17,7 @@ export default function OrderManagementPage() {
     const [updatingId, setUpdatingId] = useState(null);
     const [statusUpdate, setStatusUpdate] = useState({});
     const [expandedId, setExpandedId] = useState(null);
+
     const [filters, setFilters] = useState({
         status: "",
         customer: "",
@@ -25,13 +25,24 @@ export default function OrderManagementPage() {
         dateTo: formatDate(today),
     });
 
+    const [debouncedCustomer, setDebouncedCustomer] = useState(filters.customer);
+
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const ordersPerPage = 15;
+    const ordersPerPage = 5;
 
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
 
+    // Debounce for customer filter
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedCustomer(filters.customer);
+        }, 400); // 400ms debounce
+        return () => clearTimeout(handler);
+    }, [filters.customer]);
+
+    // Fetch orders
     const fetchOrders = async (page = 1) => {
         setLoading(true);
         try {
@@ -39,9 +50,9 @@ export default function OrderManagementPage() {
                 page,
                 limit: ordersPerPage,
                 status: filters.status,
-                customer: filters.customer,
+                customer: debouncedCustomer,
                 dateFrom: filters.dateFrom,
-                dateTo: filters.dateTo
+                dateTo: filters.dateTo,
             });
 
             const res = await fetch(`${API_URL}/api/orders?${params.toString()}`, {
@@ -60,10 +71,10 @@ export default function OrderManagementPage() {
         setLoading(false);
     };
 
-    // Fetch orders on mount and whenever filters/page change
+    // Fetch orders whenever filters, page, or debouncedCustomer changes
     useEffect(() => {
         fetchOrders(currentPage);
-    }, [filters, currentPage]);
+    }, [filters.status, filters.dateFrom, filters.dateTo, debouncedCustomer, currentPage]);
 
     const handleStatusUpdate = async (orderId) => {
         if (!statusUpdate[orderId]) return toast.error("Select a status first");
@@ -101,6 +112,7 @@ export default function OrderManagementPage() {
             dateFrom: formatDate(thirtyDaysAgo),
             dateTo: formatDate(today),
         });
+        setCurrentPage(1);
     };
 
     return (
