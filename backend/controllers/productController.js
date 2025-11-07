@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const Sale = require('../models/Sale');
 const slugify = require('slugify');
 const { v4: uuidv4 } = require('uuid');
 
@@ -68,8 +69,25 @@ const searchProducts = async (req, res) => {
 const filterProducts = async (req, res) => {
     console.log('FILTER QUERY:', req.query);
     try {
-        const { category, minPrice, maxPrice, tags, colors, inStock, bestSelling, newArrival, minWeight, maxWeight } = req.query;
+        const { category, minPrice, maxPrice, tags, colors, inStock, bestSelling, newArrival, sale, minWeight, maxWeight } = req.query;
         const filter = {};
+
+        // ✅ Sale filter
+        if (sale === 'true') {
+            const now = new Date();
+            const activeSales = await Sale.find({
+                startDate: { $lte: now },
+                endDate: { $gte: now }
+            });
+
+            if (!activeSales.length) return res.json([]);
+
+            const globalSale = activeSales.find(s => s.type === 'global');
+            if (!globalSale) {
+                const saleCategories = activeSales.flatMap(s => s.categories || []);
+                filter.category = { $in: saleCategories };
+            }
+        }
 
         // ✅ Category
         if (category) {
@@ -155,40 +173,87 @@ const filterProducts = async (req, res) => {
 // Get Filter Options
 const getFilterOptions = async (req, res) => {
     try {
-        // ✅ Apply correct filter
         const filter = {};
-        if (req.query.bestSelling === 'true') {
-            filter.bestSelling = true;
+        let products = [];
+
+        // ✅ Handle Sale products
+        if (req.query.sale === 'true') {
+            const now = new Date();
+            const activeSales = await Sale.find({
+                startDate: { $lte: now },
+                endDate: { $gte: now },
+            });
+
+            if (!activeSales.length) {
+                return res.json({
+                    categories: [],
+                    colors: [],
+                    priceRange: { min: 0, max: 0 },
+                    tags: [],
+                    allProducts: [],
+                });
+            }
+
+            const globalSale = activeSales.find((sale) => sale.type === 'global');
+            if (globalSale) {
+                // Global sale = all parent products
+                products = await Product.find({ isParent: true });
+            } else {
+                // Category-specific sale
+                const saleCategories = activeSales.flatMap((sale) => sale.categories || []);
+                products = await Product.find({
+                    category: { $in: saleCategories },
+                    isParent: true,
+                });
+            }
         }
 
-        if (req.query.newArrival === 'true') {
+        // ✅ Handle Best Selling
+        else if (req.query.bestSelling === 'true') {
+            products = await Product.find({ bestSelling: true });
+        }
+
+        // ✅ Handle New Arrivals (last 30 days)
+        else if (req.query.newArrival === 'true') {
             const THIRTY_DAYS_AGO = new Date();
             THIRTY_DAYS_AGO.setDate(THIRTY_DAYS_AGO.getDate() - 30);
-            filter.createdAt = { $gte: THIRTY_DAYS_AGO };
+            products = await Product.find({ createdAt: { $gte: THIRTY_DAYS_AGO } });
         }
 
-        const products = await Product.find(filter); // <-- FIXED
+        // ✅ Default (all)
+        else {
+            products = await Product.find({});
+        }
 
+        // 🧩 Category counts
         const categoryCounts = products.reduce((acc, p) => {
             if (p.category) acc[p.category] = (acc[p.category] || 0) + 1;
             return acc;
         }, {});
-        const categories = Object.entries(categoryCounts).map(([name, count]) => ({ name, count }));
+        const categories = Object.entries(categoryCounts).map(([name, count]) => ({
+            name,
+            count,
+        }));
 
+        // 🧩 Colors
         const colorCounts = products.reduce((acc, p) => {
-            (p.colors || []).forEach(c => {
+            (p.colors || []).forEach((c) => {
                 const colorName = c.colorName?.trim();
                 if (colorName) acc[colorName] = (acc[colorName] || 0) + 1;
             });
             return acc;
         }, {});
-        const colors = Object.entries(colorCounts).map(([color, count]) => ({ color, count }));
+        const colors = Object.entries(colorCounts).map(([color, count]) => ({
+            color,
+            count,
+        }));
 
+        // 🧩 Price range
         const prices = products
-            .flatMap(p => [
-                ...(p.colors?.map(c => c.price) || []),
+            .flatMap((p) => [
+                ...(p.colors?.map((c) => c.price) || []),
                 p.discountPrice,
-                p.price
+                p.price,
             ])
             .filter(Boolean);
 
@@ -197,7 +262,8 @@ const getFilterOptions = async (req, res) => {
             max: prices.length ? Math.max(...prices) : 3000,
         };
 
-        const allTags = [...new Set(products.flatMap(p => p.tags || []))];
+        // 🧩 Tags
+        const allTags = [...new Set(products.flatMap((p) => p.tags || []))];
 
         res.json({
             categories,
@@ -208,7 +274,9 @@ const getFilterOptions = async (req, res) => {
         });
     } catch (err) {
         console.error('Error in getFilterOptions:', err);
-        res.status(500).json({ message: 'Server error fetching filter options' });
+        res
+            .status(500)
+            .json({ message: 'Server error fetching filter options' });
     }
 };
 
@@ -292,16 +360,43 @@ const getAllProducts = async (req, res) => {
         const limit = parseInt(req.query.limit) || 20;
         const skip = (page - 1) * limit;
 
-        // ✅ Apply proper filter
         const filter = { isParent: true };
+
+        // ✅ Best Selling
         if (req.query.bestSelling === 'true') {
             filter.bestSelling = true;
         }
 
+        // ✅ New Arrivals
         if (req.query.newArrival === 'true') {
             const THIRTY_DAYS_AGO = new Date();
             THIRTY_DAYS_AGO.setDate(THIRTY_DAYS_AGO.getDate() - 30);
             filter.createdAt = { $gte: THIRTY_DAYS_AGO };
+        }
+
+        // ✅ Sale Products
+        if (req.query.sale === 'true') {
+            const now = new Date();
+            const activeSales = await Sale.find({
+                startDate: { $lte: now },
+                endDate: { $gte: now }
+            });
+
+            if (!activeSales.length) {
+                return res.json({
+                    products: [],
+                    totalProducts: 0,
+                    currentPage: page,
+                    totalPages: 1
+                });
+            }
+
+            const globalSale = activeSales.find(s => s.type === 'global');
+            if (!globalSale) {
+                const saleCategories = activeSales.flatMap(s => s.categories || []);
+                filter.category = { $in: saleCategories };
+            }
+            // global sale → no category restriction (includes all)
         }
 
         const totalProducts = await Product.countDocuments(filter);

@@ -1,4 +1,3 @@
-// components/ProductGrid.js
 import React from 'react';
 import Link from 'next/link';
 import Navbar from './Navbar';
@@ -22,6 +21,13 @@ const ProductGrid = ({ products }) => {
                                 passHref
                             >
                                 <div className="bg-white shadow-md transform transition duration-300 hover:-translate-y-2 hover:shadow-lg cursor-pointer mb-4 relative">
+                                    {/* ✅ SALE BADGE */}
+                                    {product.saleTitle && (
+                                        <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
+                                            {product.saleTitle}
+                                        </span>
+                                    )}
+
                                     <div className="overflow-hidden">
                                         <img
                                             src={
@@ -56,6 +62,7 @@ const ProductGrid = ({ products }) => {
                                                 />
                                             </button>
                                         </div>
+
                                         <div className="flex items-center justify-between mt-2">
                                             <p className="text-xl font-bold font-body text-accent">
                                                 ₹{product.discountPrice || product.price}

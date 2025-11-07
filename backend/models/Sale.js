@@ -20,7 +20,7 @@ const saleSchema = new mongoose.Schema({
         {
             type: String
         }
-    ], // Only used when type is 'category'
+    ],
 
     discountType: {
         type: String,
