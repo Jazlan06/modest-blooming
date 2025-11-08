@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const User = require('../models/User');
+const Analytics = require('../models/Analytics');
 const sendEmail = require('../utils/sendEmail');
 const { calculateDeliveryCharge } = require('../helpers/calculateDeliveryCharge');
 
@@ -13,6 +14,81 @@ const formatReadableDate = (date) => {
         hour12: true
     };
     return new Intl.DateTimeFormat('en-IN', options).format(date);
+};
+
+const updateAnalytics = async ({ order, isNewOrder = false }) => {
+    try {
+        // Get existing analytics or create new
+        let analytics = await Analytics.findOne();
+        if (!analytics) analytics = new Analytics();
+
+        // --- Update total sales & revenue for new completed orders ---
+        if (isNewOrder) {
+            analytics.totalSales += 1;
+            analytics.totalRevenue += order.totalAmount;
+        }
+
+        // --- Update top products ---
+        order.products.forEach(p => {
+            const existingProduct = analytics.topProducts.find(tp =>
+                tp.productId.equals(p.product)
+            );
+            if (existingProduct) {
+                existingProduct.totalQuantity += p.quantity;
+            } else {
+                analytics.topProducts.push({
+                    productId: p.product,
+                    totalQuantity: p.quantity
+                });
+            }
+        });
+
+        // --- Update active users today ---
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const alreadyActive = analytics.activeUsersToday.find(au =>
+            au.userId.equals(order.user) && new Date(au.date).toDateString() === today.toDateString()
+        );
+
+        if (!alreadyActive) {
+            analytics.activeUsersToday.push({
+                userId: order.user,
+                date: today // store start of day
+            });
+        }
+
+        // --- Update repeated users ---
+        const completedOrdersCount = await Order.countDocuments({
+            user: order.user,
+            status: 'completed'
+        });
+
+        const repeatedUser = analytics.repeatedUsers.find(ru =>
+            ru.userId.equals(order.user)
+        );
+
+        if (completedOrdersCount > 1) {
+            if (repeatedUser) {
+                repeatedUser.ordersCount = completedOrdersCount;
+            } else {
+                analytics.repeatedUsers.push({
+                    userId: order.user,
+                    ordersCount: completedOrdersCount
+                });
+            }
+        } else if (repeatedUser) {
+            // Remove if no longer repeated
+            analytics.repeatedUsers = analytics.repeatedUsers.filter(
+                ru => !ru.userId.equals(order.user)
+            );
+        }
+
+        analytics.updatedAt = new Date();
+        await analytics.save();
+    } catch (err) {
+        console.error('updateAnalytics error:', err);
+    }
 };
 
 exports.placeOrder = async (req, res) => {
@@ -31,7 +107,7 @@ exports.placeOrder = async (req, res) => {
                 selectedVariant: item.selectedVariant
             };
         }));
-        // Format cart for deliveryCharge util
+
         const formattedCart = populatedCart.map(item => ({
             product: item.product,
             selectedVariant: item.selectedVariant,
@@ -46,7 +122,6 @@ exports.placeOrder = async (req, res) => {
 
         const finalAmount = totalAmount + deliveryCharge;
 
-        // Save only necessary product fields in order
         const orderProducts = products.map(item => ({
             product: item.product,
             quantity: item.quantity,
@@ -63,6 +138,20 @@ exports.placeOrder = async (req, res) => {
             isHamper,
             couponApplied
         });
+
+        // ===== Emit Socket.io event =====
+        const io = req.app.locals.io;
+        io.emit('newOrder', {
+            orderId: order._id,
+            user: req.user.userId,
+            totalAmount: finalAmount,
+            deliveryCharge,
+            totalWeight,
+            createdAt: order.createdAt
+        });
+
+        // ===== Update analytics =====
+        await updateAnalytics({ order, isNewOrder: true });
 
         res.status(201).json({
             message: 'Order placed successfully',
@@ -159,6 +248,20 @@ We're sorry for the inconvenience and hope to serve you better next time.
         // Send email to customer if applicable
         if (['shipped', 'completed', 'cancelled'].includes(status)) {
             await sendEmail(user.email, subject, body.trim());
+        }
+
+        // ===== Emit Socket.io event for status update =====
+        const io = req.app.locals.io;
+        io.emit('orderStatusUpdated', {
+            orderId: order._id,
+            status: order.status,
+            userId: order.user._id,
+            updatedAt: new Date()
+        });
+
+        // ===== Update analytics if order completed =====
+        if (status === 'completed') {
+            await updateAnalytics({ order });
         }
 
         res.json({ message: 'Order status updated', order });

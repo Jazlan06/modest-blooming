@@ -24,6 +24,13 @@ export default function RegisterPage() {
         setLoading(true);
         setError('');
 
+        const phoneRegex = /^[6-9]\d{9}$/;
+        if (!phoneRegex.test(formData.phone)) {
+            setError('Please enter a valid Indian phone number');
+            setLoading(false);
+            return;
+        }
+
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
                 method: 'POST',

@@ -2,11 +2,39 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const User = require('../models/User');
 const Coupon = require('../models/Coupon');
+const Visit = require('../models/Visit');
+const Sale = require('../models/Sale');
 const mongoose = require('mongoose');
 
-// --- Sales & Coupon Analytics ---
+// Helper: start/end of today
+const getTodayRange = () => {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+    return { todayStart, todayEnd };
+};
 
-// 1. Coupon usage stats (usage count for each coupon)
+// --- Log Visit ---
+const logVisit = async (req, res) => {
+    try {
+        const { sessionId } = req.body;
+        if (!sessionId) return res.status(400).json({ success: false, message: 'sessionId required' });
+
+        await Visit.create({
+            userId: req.user?.id || null,
+            sessionId,
+            visitedAt: new Date()
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('logVisit error:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// --- Coupon usage stats ---
 const getCouponUsageStats = async (req, res) => {
     try {
         const coupons = await Coupon.aggregate([
@@ -34,22 +62,20 @@ const getCouponUsageStats = async (req, res) => {
     }
 };
 
-// 2. Sales report for every sale event (Sale model)
-const Sale = require('../models/Sale');
+// --- Sales report ---
 const getSalesReport = async (req, res) => {
     try {
-        // Get all sales with total revenue generated in that sale period
         const sales = await Sale.aggregate([
             {
                 $lookup: {
                     from: 'orders',
                     let: { start: '$startDate', end: '$endDate' },
                     pipeline: [
-                        { $match: { status: 'completed' } },
                         {
                             $match: {
                                 $expr: {
                                     $and: [
+                                        { $eq: ['$status', 'completed'] },
                                         { $gte: ['$createdAt', '$$start'] },
                                         { $lte: ['$createdAt', '$$end'] }
                                     ]
@@ -84,22 +110,25 @@ const getSalesReport = async (req, res) => {
     }
 };
 
-// 3. Orders based on custom selected date range (query params: startDate, endDate)
+// --- Orders by date range ---
 const getOrdersByDateRange = async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
-
         if (!startDate || !endDate) {
             return res.status(400).json({ success: false, message: 'startDate and endDate are required' });
         }
 
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        if (isNaN(start) || isNaN(end)) {
+            return res.status(400).json({ success: false, message: 'Invalid date format' });
+        }
+
         const orders = await Order.find({
-            createdAt: {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate)
-            },
+            createdAt: { $gte: start, $lte: end },
             status: 'completed'
-        }).populate('user', 'name email')
+        })
+            .populate('user', 'name email')
             .populate('products.product', 'title price');
 
         res.json({ success: true, data: orders });
@@ -109,11 +138,9 @@ const getOrdersByDateRange = async (req, res) => {
     }
 };
 
-// 4. Top 10 selling products
+// --- Top 10 selling products ---
 const getTopSellingProducts = async (req, res) => {
     try {
-        const limit = 10;
-
         const topProducts = await Order.aggregate([
             { $match: { status: 'completed' } },
             { $unwind: '$products' },
@@ -124,7 +151,7 @@ const getTopSellingProducts = async (req, res) => {
                 }
             },
             { $sort: { totalQuantity: -1 } },
-            { $limit: limit },
+            { $limit: 10 },
             {
                 $lookup: {
                     from: 'products',
@@ -153,9 +180,7 @@ const getTopSellingProducts = async (req, res) => {
     }
 };
 
-// --- User Activity Analytics ---
-
-// 1. Total user registrations count
+// --- User analytics ---
 const getUserRegistrationCount = async (req, res) => {
     try {
         const count = await User.countDocuments();
@@ -166,37 +191,25 @@ const getUserRegistrationCount = async (req, res) => {
     }
 };
 
-// 2. Active users today (users who placed order today)
 const getActiveUsersToday = async (req, res) => {
     try {
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const todayEnd = new Date();
-        todayEnd.setHours(23, 59, 59, 999);
-
-        const activeUsers = await Order.distinct('user', {
-            status: 'completed',
-            createdAt: { $gte: todayStart, $lte: todayEnd }
+        const { todayStart, todayEnd } = getTodayRange();
+        const activeUsers = await Visit.distinct('userId', {
+            userId: { $ne: null },
+            visitedAt: { $gte: todayStart, $lte: todayEnd }
         });
-
-        res.json({ success: true, data: { activeUsersCount: activeUsers.length, activeUsers } });
+        res.json({ success: true, data: { activeUsersCount: activeUsers.length } });
     } catch (error) {
         console.error('getActiveUsersToday error:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
 
-// 3. Users who placed repeated orders (> 1)
 const getUsersWithRepeatedOrders = async (req, res) => {
     try {
         const users = await Order.aggregate([
             { $match: { status: 'completed' } },
-            {
-                $group: {
-                    _id: '$user',
-                    ordersCount: { $sum: 1 }
-                }
-            },
+            { $group: { _id: '$user', ordersCount: { $sum: 1 } } },
             { $match: { ordersCount: { $gt: 1 } } },
             {
                 $lookup: {
@@ -223,45 +236,92 @@ const getUsersWithRepeatedOrders = async (req, res) => {
     }
 };
 
-// // --- Feedback Management ---
+// --- Paginated lists ---
+const getActiveUsersList = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+        const { todayStart, todayEnd } = getTodayRange();
 
-// // Create feedback
-// const createFeedback = async (req, res) => {
-//   try {
-//     const { userId, message, rating } = req.body;
-//     const feedback = new Feedback({ user: userId, message, rating });
-//     await feedback.save();
-//     res.status(201).json({ success: true, data: feedback });
-//   } catch (error) {
-//     console.error('createFeedback error:', error);
-//     res.status(500).json({ success: false, message: 'Server Error' });
-//   }
-// };
+        const userIds = await Visit.distinct('userId', {
+            userId: { $ne: null },
+            visitedAt: { $gte: todayStart, $lte: todayEnd }
+        });
 
-// // Get all feedbacks (admin)
-// const getAllFeedback = async (req, res) => {
-//   try {
-//     const feedbacks = await Feedback.find().populate('user', 'name email').sort({ createdAt: -1 });
-//     res.json({ success: true, data: feedbacks });
-//   } catch (error) {
-//     console.error('getAllFeedback error:', error);
-//     res.status(500).json({ success: false, message: 'Server Error' });
-//   }
-// };
+        const total = userIds.length;
+        const users = await User.find({ _id: { $in: userIds } })
+            .select('name email createdAt')
+            .skip(skip)
+            .limit(limit);
 
-// // Delete feedback (admin)
-// const deleteFeedback = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     await Feedback.findByIdAndDelete(id);
-//     res.json({ success: true, message: 'Feedback deleted' });
-//   } catch (error) {
-//     console.error('deleteFeedback error:', error);
-//     res.status(500).json({ success: false, message: 'Server Error' });
-//   }
-// };
+        res.json({
+            success: true,
+            data: users,
+            pagination: { total, page, limit, totalPages: Math.ceil(total / limit) }
+        });
+    } catch (error) {
+        console.error('getActiveUsersList error:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+const getRepeatedUsersList = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const usersAgg = await Order.aggregate([
+            { $match: { status: 'completed' } },
+            { $group: { _id: '$user', ordersCount: { $sum: 1 } } },
+            { $match: { ordersCount: { $gt: 1 } } },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'userDetails'
+                }
+            },
+            { $unwind: '$userDetails' },
+            {
+                $project: {
+                    _id: 1,
+                    ordersCount: 1,
+                    name: '$userDetails.name',
+                    email: '$userDetails.email',
+                    createdAt: '$userDetails.createdAt'
+                }
+            },
+            { $sort: { ordersCount: -1 } },
+            { $skip: skip },
+            { $limit: limit }
+        ]);
+
+        // total count separately
+        const totalCountAgg = await Order.aggregate([
+            { $match: { status: 'completed' } },
+            { $group: { _id: '$user', ordersCount: { $sum: 1 } } },
+            { $match: { ordersCount: { $gt: 1 } } },
+            { $count: 'total' }
+        ]);
+
+        const total = totalCountAgg[0]?.total || 0;
+
+        res.json({
+            success: true,
+            data: usersAgg,
+            pagination: { total, page, limit, totalPages: Math.ceil(total / limit) }
+        });
+    } catch (error) {
+        console.error('getRepeatedUsersList error:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
 
 module.exports = {
+    logVisit,
     getCouponUsageStats,
     getSalesReport,
     getOrdersByDateRange,
@@ -269,7 +329,6 @@ module.exports = {
     getUserRegistrationCount,
     getActiveUsersToday,
     getUsersWithRepeatedOrders,
-    //   createFeedback,
-    //   getAllFeedback,
-    //   deleteFeedback
+    getActiveUsersList,
+    getRepeatedUsersList
 };

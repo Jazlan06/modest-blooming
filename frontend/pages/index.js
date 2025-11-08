@@ -77,6 +77,22 @@ export default function HomePage({ content }) {
     }, []);
 
     useEffect(() => {
+        const sessionId = localStorage.getItem("sessionId") || crypto.randomUUID();
+        localStorage.setItem("sessionId", sessionId);
+
+        const token = localStorage.getItem("token");
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/log-visit`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token && { Authorization: `Bearer ${token}` }),
+            },
+            body: JSON.stringify({ sessionId }),
+        });
+    }, []);
+
+
+    useEffect(() => {
         if (!isPaused && heroBanners.length > 1) {
             resetTimeout();
             timeoutRef.current = setTimeout(() => {

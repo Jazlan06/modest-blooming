@@ -1,18 +1,23 @@
 const express = require('express');
 const {
-  getCouponUsageStats,
-  getSalesReport,
-  getOrdersByDateRange,
-  getTopSellingProducts,
-  getUserRegistrationCount,
-  getActiveUsersToday,
-  getUsersWithRepeatedOrders
+    logVisit,
+    getCouponUsageStats,
+    getSalesReport,
+    getOrdersByDateRange,
+    getTopSellingProducts,
+    getUserRegistrationCount,
+    getActiveUsersToday,
+    getUsersWithRepeatedOrders,
+    getActiveUsersList,
+    getRepeatedUsersList,
 } = require('../controllers/analyticsController');
 
-const { isAuthenticated, isAdmin } = require('../middleware/auth');
+const { isAuthenticated, isAdmin, isAuthenticatedOptional } = require('../middleware/auth');
 
 const router = express.Router();
 
+//Active User Today(Visit)
+router.post('/log-visit', isAuthenticatedOptional, logVisit);
 // Protect all routes to admin only
 router.use(isAuthenticated, isAdmin);
 
@@ -26,5 +31,9 @@ router.get('/top-products', getTopSellingProducts);
 router.get('/user-registrations', getUserRegistrationCount);
 router.get('/active-users-today', getActiveUsersToday);
 router.get('/repeated-users', getUsersWithRepeatedOrders);
+
+//List
+router.get('/active-users-list', getActiveUsersList);
+router.get('/repeated-users-list', getRepeatedUsersList);
 
 module.exports = router;

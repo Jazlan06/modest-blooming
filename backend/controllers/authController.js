@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
 
+
 const registerUser = async (req, res) => {
     const { name, email, password, phone } = req.body;
 
@@ -39,6 +40,13 @@ const registerUser = async (req, res) => {
 
         res.status(201).json({ message: 'User registered. Please check your email to verify.' });
     } catch (err) {
+        console.error("❌ Registration error:", err);
+
+        if (err.name === 'ValidationError') {
+            const errors = Object.values(err.errors).map(e => e.message);
+            return res.status(400).json({ message: errors.join(', ') });
+        }
+
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
