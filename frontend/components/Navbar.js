@@ -156,12 +156,14 @@ export default function Navbar() {
                         <div className="flex items-center gap-6 ml-auto">
                             {/* Wishlist Icon with Badge */}
                             <div className="relative">
-                                <FaHeart size={26} className="cursor-pointer" />
-                                {wishlist.length > 0 && (
-                                    <span className="absolute -top-2 -right-2 bg-white text-[#F4C2C2] text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
-                                        {wishlist.length}
-                                    </span>
-                                )}
+                                <Link href="/wishlist" className="relative">
+                                    <FaHeart size={26} className="cursor-pointer" />
+                                    {wishlist.length > 0 && (
+                                        <span className="absolute -top-2 -right-2 bg-white text-[#F4C2C2] text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
+                                            {wishlist.length}
+                                        </span>
+                                    )}
+                                </Link>
                             </div>
                             <FaShoppingCart size={26} className="cursor-pointer" />
                             <FaUserCircle
@@ -177,12 +179,14 @@ export default function Navbar() {
                     <div className="flex items-center gap-4 md:hidden">
                         {/* Mobile Wishlist Icon with Badge */}
                         <div className="relative">
-                            <FaHeart size={22} className="cursor-pointer" />
-                            {wishlist.length > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-white text-[#F4C2C2] text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
-                                    {wishlist.length}
-                                </span>
-                            )}
+                            <Link href="/wishlist" className="relative">
+                                <FaHeart size={22} className="cursor-pointer" />
+                                {wishlist.length > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-white text-[#F4C2C2] text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
+                                        {wishlist.length}
+                                    </span>
+                                )}
+                            </Link>
                         </div>
                         <FaShoppingCart size={22} className="cursor-pointer ml-[5px]" />
                     </div>
