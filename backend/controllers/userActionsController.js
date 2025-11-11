@@ -12,7 +12,7 @@ const addToCart = async (req, res) => {
         );
 
         if (existingIndex > -1) {
-            user.cart[existingIndex].quantity += quantity;
+            user.cart[existingIndex].quantity = quantity;
         } else {
             user.cart.push({
                 product: productId,
@@ -22,6 +22,7 @@ const addToCart = async (req, res) => {
         }
 
         await user.save();
+        await user.populate("cart.product");
         res.json({ cart: user.cart });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -36,7 +37,7 @@ const removeFromCart = async (req, res) => {
 
         user.cart = user.cart.filter(item => item.product.toString() !== productId);
         await user.save();
-
+        await user.populate("cart.product");
         res.json({ cart: user.cart });
     } catch (err) {
         res.status(500).json({ message: err.message });

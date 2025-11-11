@@ -12,7 +12,7 @@ const { isAuthenticated } = require('../middleware/auth');
 const router = express.Router();
 
 // Cart
-router.post('/cart', isAuthenticated, addToCart);
+router.post('/cart/:productId', isAuthenticated, addToCart);
 router.delete('/cart/:productId', isAuthenticated, removeFromCart);
 
 // Wishlist

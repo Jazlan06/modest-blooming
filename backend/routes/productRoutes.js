@@ -36,6 +36,20 @@ router.get('/slug/:slug', async (req, res) => {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
+router.post('/wishlist-details', async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!ids || !Array.isArray(ids)) {
+            return res.status(400).json({ message: "Invalid product IDs" });
+        }
+
+        const products = await Product.find({ _id: { $in: ids } });
+        res.json(products);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Failed to fetch wishlist products" });
+    }
+});
 
 router.get('/:id', getProduct);
 // Admin only

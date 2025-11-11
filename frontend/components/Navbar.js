@@ -4,6 +4,7 @@ import { FaBars, FaHeart, FaShoppingCart, FaSearch, FaTimes, FaUserCircle } from
 import Link from 'next/link';
 import Image from 'next/image';
 import { useWishlist } from '@/context/WishlistContext';
+import { useCart } from '@/context/CartContext';
 
 export default function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -14,6 +15,7 @@ export default function Navbar() {
     const [wishlistCount, setWishlistCount] = useState(0);
     const inputRef = useRef(null);
     const { wishlist } = useWishlist();
+    const { cart } = useCart();
     const router = useRouter();
     const { pathname } = router;
 
@@ -159,13 +161,23 @@ export default function Navbar() {
                                 <Link href="/wishlist" className="relative">
                                     <FaHeart size={26} className="cursor-pointer" />
                                     {wishlist.length > 0 && (
-                                        <span className="absolute -top-2 -right-2 bg-white text-[#F4C2C2] text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
+                                        <span className="absolute -top-3 -right-3 bg-white text-[#F4C2C2] text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
                                             {wishlist.length}
                                         </span>
                                     )}
                                 </Link>
                             </div>
-                            <FaShoppingCart size={26} className="cursor-pointer" />
+                            {/* Cart Icon */}
+                            <div className="relative">
+                                <Link href="/cart" className="relative">
+                                    <FaShoppingCart size={26} className="cursor-pointer" />
+                                    {cart.length > 0 && (
+                                        <span className="absolute -top-3 -right-3 bg-white text-[#F4C2C2] text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
+                                            {cart.length}
+                                        </span>
+                                    )}
+                                </Link>
+                            </div>
                             <FaUserCircle
                                 size={28}
                                 className="cursor-pointer text-white hover:text-gray-200"
@@ -182,13 +194,23 @@ export default function Navbar() {
                             <Link href="/wishlist" className="relative">
                                 <FaHeart size={22} className="cursor-pointer" />
                                 {wishlist.length > 0 && (
-                                    <span className="absolute -top-2 -right-2 bg-white text-[#F4C2C2] text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
+                                    <span className="absolute -top-3 -right-3 bg-white text-[#F4C2C2] text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
                                         {wishlist.length}
                                     </span>
                                 )}
                             </Link>
                         </div>
-                        <FaShoppingCart size={22} className="cursor-pointer ml-[5px]" />
+                        {/* Cart Icon */}
+                        <div className="relative">
+                            <Link href="/cart" className="relative">
+                                <FaShoppingCart size={22} className="cursor-pointer" />
+                                {cart.length > 0 && (
+                                    <span className="absolute -top-3 -right-3 bg-white text-[#F4C2C2] text-xs font-bold px-1.5 py-0.5 rounded-full shadow-md">
+                                        {cart.length}
+                                    </span>
+                                )}
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </nav>

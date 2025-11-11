@@ -60,6 +60,34 @@ const userSchema = new mongoose.Schema({
             ref: 'Product'
         }
     ],
+    addresses: [
+        {
+            label: {
+                type: String,
+                enum: ['Home', 'Office', 'Other'],
+                default: 'Home'
+            },
+            fullName: {
+                type: String,
+                required: true
+            },
+            phone: {
+                type: String,
+                required: true,
+                match: [/^[6-9]\d{9}$/, 'Please enter a valid phone number']
+            },
+            street: String,
+            apartment: String,
+            locality: String,
+            city: String,
+            state: String,
+            pincode: String,
+            isDefault: {
+                type: Boolean,
+                default: false
+            }
+        }
+    ],
     createdAt: {
         type: Date,
         default: Date.now

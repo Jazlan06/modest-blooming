@@ -55,6 +55,7 @@ const feedbackRoutes = require('./routes/feedbackRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const deliveryRoutes = require('./routes/deliveryRoutes');
 const deliveryRateRoutes = require('./routes/admin/deliveryRateRoutes');
+const addressRoutes = require('./routes/addressRoutes');
 
 // Route bindings
 app.use('/api/auth', authRoutes);
@@ -68,6 +69,7 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/admin/delivery-rates', deliveryRateRoutes);
+app.use('/api/address', addressRoutes);
 
 server.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);

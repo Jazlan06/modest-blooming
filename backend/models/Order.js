@@ -21,6 +21,7 @@ const orderSchema = new mongoose.Schema({
         apartment: String
     },
     isHamper: { type: Boolean, default: false },
+    hamperNote: { type: String, trim: true, default: "" },
     couponApplied: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
     paymentInfo: {
         paymentId: { type: String },

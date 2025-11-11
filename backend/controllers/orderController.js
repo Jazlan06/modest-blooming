@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const User = require('../models/User');
+const Coupon = require('../models/Coupon');
 const Analytics = require('../models/Analytics');
 const sendEmail = require('../utils/sendEmail');
 const { calculateDeliveryCharge } = require('../helpers/calculateDeliveryCharge');
@@ -93,10 +94,16 @@ const updateAnalytics = async ({ order, isNewOrder = false }) => {
 
 exports.placeOrder = async (req, res) => {
     try {
-        const { products, totalAmount, couponApplied, address, isHamper } = req.body;
+        const { products, totalAmount, couponApplied, addressId, isHamper, hamperNote } = req.body;
 
         if (!products || products.length === 0) {
             return res.status(400).json({ message: 'No products provided' });
+        }
+
+        const user = await User.findById(req.user.userId);
+        const address = user.addresses.id(addressId);
+        if (!address) {
+            return res.status(400).json({ message: 'Invalid address' });
         }
 
         const populatedCart = await Promise.all(products.map(async (item) => {
@@ -129,6 +136,16 @@ exports.placeOrder = async (req, res) => {
             priceAtPurchase: item.priceAtPurchase
         }));
 
+        let couponId = null;
+        if (couponApplied) {
+            if (/^[0-9a-fA-F]{24}$/.test(couponApplied)) {
+                couponId = couponApplied;
+            } else {
+                const foundCoupon = await Coupon.findOne({ code: couponApplied.toUpperCase() });
+                if (foundCoupon) couponId = foundCoupon._id;
+            }
+        }
+
         const order = await Order.create({
             user: req.user.userId,
             products: orderProducts,
@@ -136,7 +153,8 @@ exports.placeOrder = async (req, res) => {
             deliveryCharge,
             address,
             isHamper,
-            couponApplied
+            hamperNote,
+            couponApplied: couponId,
         });
 
         // ===== Emit Socket.io event =====

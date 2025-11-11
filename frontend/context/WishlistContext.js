@@ -15,9 +15,15 @@ export const WishlistProvider = ({ children }) => {
                     Authorization: `Bearer ${token}`,
                 },
             });
+
             const data = await res.json();
+
             if (data?.wishlist && Array.isArray(data.wishlist)) {
-                setWishlist(data.wishlist.map(item => item._id || item));
+                // ✅ Keep full product objects if populated, fallback to {_id: id}
+                const formattedWishlist = data.wishlist.map(item =>
+                    typeof item === 'string' ? { _id: item } : item
+                );
+                setWishlist(formattedWishlist);
             } else {
                 setWishlist([]);
             }
@@ -34,12 +40,12 @@ export const WishlistProvider = ({ children }) => {
             return;
         }
 
-        const isInWishlist = wishlist.includes(productId);
+        const isInWishlist = wishlist.some(p => p._id === productId);
         const method = isInWishlist ? 'DELETE' : 'POST';
         const url = `http://localhost:5000/api/user/wishlist/${productId}`;
 
         try {
-            const res = await fetch(url, {
+            await fetch(url, {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
@@ -48,8 +54,9 @@ export const WishlistProvider = ({ children }) => {
                 ...(method === 'POST' ? { body: JSON.stringify({ productId }) } : {}),
             });
 
-            const data = await res.json();
-            setWishlist(data.wishlist.map(id => (typeof id === 'string' ? id : id._id)));
+            // ✅ Re-fetch wishlist to ensure full product details
+            await fetchWishlist();
+
         } catch (err) {
             console.error('Error updating wishlist:', err);
         }

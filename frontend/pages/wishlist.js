@@ -4,6 +4,7 @@ import { FaArrowLeft, FaShoppingCart } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { useWishlist } from "@/context/WishlistContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -12,10 +13,14 @@ export default function WishlistPage() {
     const [categories, setCategories] = useState(["All"]);
     const [activeCategory, setActiveCategory] = useState("All");
     const [loading, setLoading] = useState(true);
+    const [removedHearts, setRemovedHearts] = useState([]);
+    const { fetchWishlist: refreshGlobalWishlist } = useWishlist();
 
     const router = useRouter();
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
+    const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : "";
 
+    // Fetch wishlist
     const fetchWishlist = async () => {
         try {
             setLoading(true);
@@ -40,7 +45,19 @@ export default function WishlistPage() {
         }
     };
 
-    const removeFromWishlist = async (productId) => {
+    // Remove from wishlist + heart animation
+    const removeFromWishlist = async (productId, e) => {
+        e.stopPropagation();
+
+        // spawn a floating heart animation
+        const rect = e.currentTarget.getBoundingClientRect();
+        const newHeart = {
+            id: Date.now(),
+            x: rect.left + rect.width / 2,
+            y: rect.top,
+        };
+        setRemovedHearts((prev) => [...prev, newHeart]);
+
         try {
             const res = await fetch(`${API_URL}/api/user/wishlist/${productId}`, {
                 method: "DELETE",
@@ -48,18 +65,27 @@ export default function WishlistPage() {
             });
             if (res.ok) {
                 setWishlist((prev) => prev.filter((item) => item._id !== productId));
+                refreshGlobalWishlist();
                 toast.success("Removed from wishlist");
-            } else {
-                toast.error("Failed to remove");
-            }
+            } else toast.error("Failed to remove");
         } catch {
             toast.error("Something went wrong");
         }
+
+        // remove heart after animation
+        setTimeout(
+            () =>
+                setRemovedHearts((prev) =>
+                    prev.filter((heart) => heart.id !== newHeart.id)
+                ),
+            1500
+        );
     };
 
-    const moveToCart = async (productId) => {
+    const moveToCart = async (productId, e) => {
+        e.stopPropagation();
         try {
-            const res = await fetch(`${API_URL}/api/user/cart`, {
+            const res = await fetch(`${API_URL}/api/user/cart/${productId}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -69,10 +95,9 @@ export default function WishlistPage() {
             });
             if (res.ok) {
                 setWishlist((prev) => prev.filter((item) => item._id !== productId));
+                refreshGlobalWishlist();
                 toast.success("Moved to cart");
-            } else {
-                toast.error("Failed to move to cart");
-            }
+            } else toast.error("Failed to move to cart");
         } catch {
             toast.error("Something went wrong");
         }
@@ -95,8 +120,30 @@ export default function WishlistPage() {
         );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-gray-100 pt-6 px-6 md:px-12 font-body">
+        <div className="relative min-h-screen bg-gradient-to-br from-white via-gray-50 to-gray-100 pt-6 px-6 md:px-12 font-body overflow-hidden">
             <Toaster position="top-right" />
+
+            {/* Floating hearts animation layer */}
+            <AnimatePresence>
+                {removedHearts.map((heart) => (
+                    <motion.div
+                        key={heart.id}
+                        initial={{ opacity: 1, scale: 1, y: 0 }}
+                        animate={{ opacity: 0, scale: 1.8, y: -120 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
+                        className="fixed z-[9999] text-pink-500 text-3xl select-none pointer-events-none drop-shadow-[0_0_10px_rgba(255,100,150,0.6)]"
+                        style={{
+                            left: heart.x,
+                            top: heart.y,
+                            transform: "translate(-50%, -50%)",
+                        }}
+                    >
+                        ❤️
+                    </motion.div>
+                ))}
+            </AnimatePresence>
+
 
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
@@ -129,7 +176,7 @@ export default function WishlistPage() {
                 </div>
             </div>
 
-            {/* Categories Filter */}
+            {/* Category Filter */}
             {wishlist.length > 0 && (
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}
@@ -144,7 +191,7 @@ export default function WishlistPage() {
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
                             className={`px-6 py-2.5 text-sm md:text-base rounded-full font-medium flex-shrink-0 border transition-all shadow-sm 
-                                ${activeCategory === cat
+              ${activeCategory === cat
                                     ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-transparent shadow-md"
                                     : "bg-white text-gray-700 border-gray-300 hover:bg-indigo-50"
                                 }`}
@@ -178,7 +225,9 @@ export default function WishlistPage() {
                             💔
                         </motion.div>
                     </div>
-                    <h2 className="text-2xl font-semibold text-gray-800 mb-2">Your wishlist is empty</h2>
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+                        Your wishlist is empty
+                    </h2>
                     <p className="text-gray-500 mb-6">
                         Start adding your favorite products to keep track of them here.
                     </p>
@@ -209,11 +258,8 @@ export default function WishlistPage() {
                             >
                                 {/* Remove button */}
                                 <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        removeFromWishlist(product._id);
-                                    }}
-                                    className="absolute top-3 right-3 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition z-10"
+                                    onClick={(e) => removeFromWishlist(product._id, e)}
+                                    className="absolute top-3 right-3 bg-transparent text-white rounded-full p-2 hover:bg-red-600 transition z-10"
                                 >
                                     ✕
                                 </button>
@@ -227,7 +273,7 @@ export default function WishlistPage() {
                                             "/placeholder.png"
                                         }
                                         alt={product.title}
-                                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                        className="w-full h-full object-fill transition-transform duration-500 hover:scale-105"
                                     />
                                 </div>
 
@@ -249,11 +295,8 @@ export default function WishlistPage() {
                                     <motion.button
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.97 }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            moveToCart(product._id);
-                                        }}
-                                        className="w-full py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold font-serif text-lg rounded-lg hover:from-green-600 hover:to-green-700 shadow-sm transition-all"
+                                        onClick={(e) => moveToCart(product._id, e)}
+                                        className="w-full py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg hover:from-green-600 hover:to-green-700 shadow-sm transition-all"
                                     >
                                         Move to Cart
                                     </motion.button>
