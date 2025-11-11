@@ -161,4 +161,8 @@ Apply your brand color palette more cohesively.
 Add badges like "Best Selling", "New", etc.
 
 
-Would you like me to also show how to make these modals searchable (e.g. filter by name/email)?
+Would you like me to also show how to make these modals searchable (e.g. filter by name/email)?|
+
+
+
+wait here the the flow /cart there will be all items it's quantity, so in price tehre's total mrp then discount on mrp , then coupon if any , then delivery charge and then it's all sum, so in/cart when place order is clicked it pushes the router to /address?redirect=payement with all details of cart and price so in /address user can select in which address he wants the delivery and when continued he'll be pushed to /payment page where he can choose his payment method and pay successfully using razorpay. U got the flow?

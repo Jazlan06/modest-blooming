@@ -17,14 +17,14 @@ const formatReadableDate = (date) => {
     return new Intl.DateTimeFormat('en-IN', options).format(date);
 };
 
-const updateAnalytics = async ({ order, isNewOrder = false }) => {
+const updateAnalytics = async ({ order, incrementSales = false }) => {
     try {
         // Get existing analytics or create new
         let analytics = await Analytics.findOne();
         if (!analytics) analytics = new Analytics();
 
         // --- Update total sales & revenue for new completed orders ---
-        if (isNewOrder) {
+        if (incrementSales) {
             analytics.totalSales += 1;
             analytics.totalRevenue += order.totalAmount;
         }
@@ -94,7 +94,7 @@ const updateAnalytics = async ({ order, isNewOrder = false }) => {
 
 exports.placeOrder = async (req, res) => {
     try {
-        const { products, totalAmount, couponApplied, addressId, isHamper, hamperNote } = req.body;
+        const { products, totalAmount, couponApplied, addressId, isHamper, hamperNote, paymentMethod } = req.body;
 
         if (!products || products.length === 0) {
             return res.status(400).json({ message: 'No products provided' });
@@ -146,6 +146,7 @@ exports.placeOrder = async (req, res) => {
             }
         }
 
+        // ===== Create order with status 'pending' =====
         const order = await Order.create({
             user: req.user.userId,
             products: orderProducts,
@@ -155,6 +156,11 @@ exports.placeOrder = async (req, res) => {
             isHamper,
             hamperNote,
             couponApplied: couponId,
+            status: 'pending', // payment not done yet
+            paymentInfo: {
+                method: paymentMethod,
+                fees: 0 // will calculate after Razorpay order is created
+            }
         });
 
         // ===== Emit Socket.io event =====
@@ -169,15 +175,14 @@ exports.placeOrder = async (req, res) => {
         });
 
         // ===== Update analytics =====
-        await updateAnalytics({ order, isNewOrder: true });
+        // await updateAnalytics({ order, isNewOrder: true });
 
+        // ===== Return order so frontend can initiate Razorpay payment =====
         res.status(201).json({
-            message: 'Order placed successfully',
-            order,
-            deliveryCharge,
-            totalWeight,
-            ratePerKg
+            message: 'Order created successfully. Proceed to payment.',
+            order
         });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

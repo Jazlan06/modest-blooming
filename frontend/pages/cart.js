@@ -535,9 +535,17 @@ export default function CartPage() {
                                     }),
                                 });
 
+                                if (!res.ok) {
+                                    const errorData = await res.text();
+                                    throw new Error(`Order creation failed: ${errorData}`);
+                                }
                                 const data = await res.json();
-                                if (!res.ok) throw new Error(data.message || "Order failed");
-
+                                if (!data || !data.order || !data.order._id) {
+                                    console.error("❌ Invalid order response:", data);
+                                    alert("Something went wrong creating the order.");
+                                    return;
+                                }
+                                localStorage.setItem("currentOrder", JSON.stringify(data.order));
                                 router.push(`/address?redirect=payment`);
                             } catch (err) {
                                 alert(err.message);

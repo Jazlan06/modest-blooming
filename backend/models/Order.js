@@ -11,7 +11,7 @@ const orderSchema = new mongoose.Schema({
         }
     ],
     totalAmount: { type: Number, required: true },
-    deliveryCharge: { type: Number },
+    deliveryCharge: { type: Number, default: 0 },
     address: {
         locality: String,
         city: String,
@@ -24,9 +24,11 @@ const orderSchema = new mongoose.Schema({
     hamperNote: { type: String, trim: true, default: "" },
     couponApplied: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
     paymentInfo: {
-        paymentId: { type: String },
         orderId: { type: String },
-        signature: { type: String }
+        paymentId: { type: String },
+        signature: { type: String },
+        method: { type: String },
+        fees: { type: Number, default: 0 }
     },
     status: {
         type: String,

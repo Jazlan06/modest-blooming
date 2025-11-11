@@ -310,7 +310,15 @@ export default function AddressPage() {
                     {/* Proceed to Payment if default exists */}
                     {addresses.some(addr => addr.isDefault) && isPaymentFlow && (
                         <button
-                            onClick={() => router.push('/payment')}
+                            onClick={() => {
+                                const order = localStorage.getItem("currentOrder");
+                                if (!order) {
+                                    alert("No order found. Please try again.");
+                                    router.push("/cart");
+                                    return;
+                                }
+                                router.push("/payment");
+                            }}
                             className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-all"
                         >
                             Proceed to Payment
