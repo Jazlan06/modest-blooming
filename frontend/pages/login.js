@@ -9,6 +9,7 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [successModal, setSuccessModal] = useState(false);
+    const [showAccountDetails, setShowAccountDetails] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState(null);
 
@@ -77,7 +78,7 @@ export default function LoginPage() {
     return (
         <>
             <Navbar />
-            <div className="min-h-screen bg-gradient-to-b from-[#F4C2C2] via-[#F9E4E4] to-[#FFEDED] flex items-center justify-center px-4">
+            <div className="min-h-screen mt-[3rem] bg-gradient-to-b from-[#F4C2C2] via-[#F9E4E4] to-[#FFEDED] flex items-center justify-center px-4">
                 <div className="bg-white shadow-lg rounded-lg max-w-md w-full p-8 space-y-6 animate-fadeIn relative">
                     {successModal && (
                         <div className="absolute inset-0 bg-green-50 bg-opacity-90 flex flex-col items-center justify-center rounded-lg z-20 p-6">
@@ -152,47 +153,113 @@ export default function LoginPage() {
                             </p>
                         </>
                     ) : (
-                        <div className="text-center font-serif tracking-wide space-y-6">
-                            <h2 className="text-3xl font-semibold text-gray-900">
+                        <div className="space-y-8 font-serif max-w-md  mx-auto">
+                            <h2 className="text-3xl font-semibold text-gray-900 text-center">
                                 Welcome, <span className="text-[#8B3E5D]">{user?.name || 'User'}</span>!
                             </h2>
-                            <button
-                                onClick={handleLogout}
-                                className="bg-[#8B3E5D] hover:bg-[#6B2B45] text-white font-bold py-3 px-8 rounded-md shadow-md transition-opacity disabled:opacity-60"
-                            >
-                                Logout
-                            </button>
+
+                            {/* Profile Sections */}
+                            <div className="bg-white rounded-xl shadow-lg divide-y divide-gray-200 overflow-hidden">
+                                {/* Manage Account with dropdown */}
+                                <div className="p-4 cursor-pointer transition hover:bg-gray-50" onClick={() => setShowAccountDetails(!showAccountDetails)}>
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                                            <svg className="w-5 h-5 text-[#8B3E5D]" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M10 10a4 4 0 100-8 4 4 0 000 8zm0 2c-5 0-8 2.5-8 5v1h16v-1c0-2.5-3-5-8-5z" />
+                                            </svg>
+                                            Manage Account
+                                        </h3>
+                                        <span className="text-gray-500 text-xl">{showAccountDetails ? '−' : '+'}</span>
+                                    </div>
+                                    <p className="text-gray-600 text-sm mt-1">View and edit your personal address</p>
+
+                                    {showAccountDetails && (
+                                        <div className="mt-3 border-t border-gray-200 pt-3 space-y-2">
+                                            <button
+                                                onClick={() => router.push('/address')}
+                                                className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-gray-700 font-medium flex items-center gap-2 transition"
+                                            >
+                                                <svg className="w-4 h-4 text-[#8B3E5D]" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zM10 11a2 2 0 110-4 2 2 0 010 4z" />
+                                                </svg>
+                                                Address
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="p-4 hover:bg-gray-50 cursor-pointer transition flex items-center gap-3" onClick={() => router.push('/orders')}>
+                                    <svg className="w-5 h-5 text-[#8B3E5D]" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M16 6V4H4v2h12zm0 4v-2H4v2h12zm0 4v-2H4v2h12z" />
+                                    </svg>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-800">My Orders</h3>
+                                        <p className="text-gray-600 text-sm">Check your order history</p>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 hover:bg-gray-50 cursor-pointer transition flex items-center gap-3" onClick={() => router.push('/wishlist')}>
+                                    <svg className="w-5 h-5 text-[#8B3E5D]" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 18.343l-6.828-6.829a4 4 0 010-5.656z" />
+                                    </svg>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-800">Wishlist</h3>
+                                        <p className="text-gray-600 text-sm">Your saved items</p>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 hover:bg-gray-50 cursor-pointer transition flex items-center gap-3" onClick={() => router.push('/cart')}>
+                                    <svg className="w-5 h-5 text-[#8B3E5D]" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M16 6H4l-1 2h14l-1-2zM4 10h12v6H4v-6z" />
+                                    </svg>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-800">Cart</h3>
+                                        <p className="text-gray-600 text-sm">View your cart items</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Logout Button */}
+                            <div className="text-center">
+                                <button
+                                    onClick={handleLogout}
+                                    className="mt-4 bg-[#8B3E5D] hover:bg-[#6B2B45] text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-opacity disabled:opacity-60"
+                                >
+                                    Logout
+                                </button>
+                            </div>
                         </div>
                     )}
 
                     <style jsx>{`
-                        @keyframes fadeIn {
-                            from {
-                                opacity: 0;
-                                transform: translateY(20px);
-                            }
-                            to {
-                                opacity: 1;
-                                transform: translateY(0);
-                            }
+                    @keyframes fadeIn {
+                        from {
+                            opacity: 0;
+                            transform: translateY(20px);
                         }
+                        to {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+                    }
 
-                        @keyframes shake {
-                            0%, 100% { transform: translateX(0); }
-                            20%, 60% { transform: translateX(-8px); }
-                            40%, 80% { transform: translateX(8px); }
-                        }
+                    @keyframes shake {
+                        0%, 100% { transform: translateX(0); }
+                        20%, 60% { transform: translateX(-8px); }
+                        40%, 80% { transform: translateX(8px); }
+                    }
 
-                        .animate-fadeIn {
-                            animation: fadeIn 0.6s ease forwards;
-                        }
+                    .animate-fadeIn {
+                        animation: fadeIn 0.6s ease forwards;
+                    }
 
-                        .animate-shake {
-                            animation: shake 0.4s ease;
-                        }
-                    `}</style>
+                    .animate-shake {
+                        animation: shake 0.4s ease;
+                    }
+                `}</style>
                 </div>
             </div>
         </>
     );
+
 }

@@ -13,6 +13,7 @@ export default function Navbar() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [role, setRole] = useState(null);
     const [wishlistCount, setWishlistCount] = useState(0);
+    const [manageAccountOpen, setManageAccountOpen] = useState(false);
     const inputRef = useRef(null);
     const { wishlist } = useWishlist();
     const { cart } = useCart();
@@ -141,18 +142,21 @@ export default function Navbar() {
 
                         {/* Nav Links */}
                         <div className="flex ml-[100px] items-center gap-8 text-lg font-medium mr-6">
-                            <Link href="/" className="hover:underline focus:outline-none focus:ring-0">Home</Link>
-                            <Link href="/products" className="hover:underline focus:outline-none focus:ring-0">Shop</Link>
-                            <Link href="/about" className="hover:underline focus:outline-none focus:ring-0">About</Link>
-                            <Link href="/contact" className="hover:underline focus:outline-none focus:ring-0">Contact</Link>
-
-                            {role === 'admin' && (
+                            {role !== 'admin' ? (
+                                <>
+                                    <Link href="/" className="hover:underline focus:outline-none focus:ring-0">Home</Link>
+                                    <Link href="/products" className="hover:underline focus:outline-none focus:ring-0">Shop</Link>
+                                    <Link href="/about" className="hover:underline focus:outline-none focus:ring-0">About</Link>
+                                    <Link href="/contact" className="hover:underline focus:outline-none focus:ring-0">Contact</Link>
+                                </>
+                            ) : (
                                 <>
                                     <Link href="/admin" className="hover:underline focus:outline-none focus:ring-0 text-yellow-200">Admin</Link>
                                     <Link href="/admin/analytics" className="hover:underline focus:outline-none focus:ring-0 text-yellow-200">Analytics</Link>
                                 </>
                             )}
                         </div>
+
 
                         {/* Desktop Icons */}
                         <div className="flex items-center gap-6 ml-auto">
@@ -178,12 +182,128 @@ export default function Navbar() {
                                     )}
                                 </Link>
                             </div>
-                            <FaUserCircle
-                                size={28}
-                                className="cursor-pointer text-white hover:text-gray-200"
-                                onClick={handleProfileClick}
-                                title={isLoggedIn ? 'Logout' : 'Register'}
-                            />
+                            {/* === Profile Section=== */}
+                            <div className="relative">
+                                {isLoggedIn ? (
+                                    <div className="relative group">
+                                        {/* Profile Icon */}
+                                        <button
+                                            className="focus:outline-none"
+                                            onClick={() => router.push("/login")}
+                                        >
+                                            <FaUserCircle
+                                                size={28}
+                                                className="cursor-pointer text-white hover:text-gray-200 transition"
+                                                title="Profile"
+                                            />
+                                        </button>
+                                        {/* === Main Dropdown === */}
+                                        <div
+                                            className="
+          absolute right-0 mt-3 w-56 bg-white text-gray-800 rounded-lg shadow-lg 
+          opacity-0 group-hover:opacity-100 invisible group-hover:visible 
+          transition-all duration-300 transform group-hover:translate-y-1 z-50
+        "
+                                        >
+                                            {/* User Info */}
+                                            <div className="px-4 py-3 border-b border-gray-100">
+                                                <p className="text-sm text-gray-600">Signed in as</p>
+                                                <p className="font-semibold text-[#8B3E5D] truncate">
+                                                    {typeof window !== 'undefined' &&
+                                                        JSON.parse(localStorage.getItem('user'))?.name || 'User'}
+                                                </p>
+                                            </div>
+
+                                            {/* Links */}
+                                            <ul className="py-2 text-sm font-medium">
+                                                <li>
+                                                    <Link
+                                                        href="/orders"
+                                                        className="block px-4 py-2 hover:bg-[#F9E4E4] hover:text-[#8B3E5D] transition"
+                                                    >
+                                                        My Orders
+                                                    </Link>
+                                                </li>
+                                                <li>
+                                                    <Link
+                                                        href="/wishlist"
+                                                        className="block px-4 py-2 hover:bg-[#F9E4E4] hover:text-[#8B3E5D] transition"
+                                                    >
+                                                        Wishlist
+                                                    </Link>
+                                                </li>
+                                                <li>
+                                                    <Link
+                                                        href="/cart"
+                                                        className="block px-4 py-2 hover:bg-[#F9E4E4] hover:text-[#8B3E5D] transition"
+                                                    >
+                                                        Cart
+                                                    </Link>
+                                                </li>
+
+                                                {/* === Manage Account with Clickable Submenu (Dropdown Below) === */}
+                                                <li className="relative">
+                                                    <button
+                                                        onClick={() => setManageAccountOpen(!manageAccountOpen)}
+                                                        className="w-full flex items-center justify-between px-4 py-2 hover:bg-[#F9E4E4] hover:text-[#8B3E5D] transition focus:outline-none"
+                                                    >
+                                                        Manage Account
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            className={`h-4 w-4 ml-2 transition-transform ${manageAccountOpen ? 'rotate-180' : ''}`}
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                        >
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </button>
+
+                                                    {/* Submenu below */}
+                                                    {manageAccountOpen && (
+                                                        <div
+                                                            className="absolute top-full left-0 mt-2 bg-white rounded-md shadow-md w-48 z-50"
+                                                        >
+                                                            <Link
+                                                                href="/address"
+                                                                className="block px-4 py-2 hover:bg-[#F9E4E4] hover:text-[#8B3E5D] transition"
+                                                            >
+                                                                My Addresses
+                                                            </Link>
+                                                        </div>
+                                                    )}
+                                                </li>
+
+
+                                            </ul>
+
+                                            {/* Logout */}
+                                            <div className="border-t border-gray-100">
+                                                <button
+                                                    onClick={() => {
+                                                        localStorage.removeItem('token');
+                                                        localStorage.removeItem('user');
+                                                        setIsLoggedIn(false);
+                                                        setRole(null);
+                                                        router.push('/');
+                                                    }}
+                                                    className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition"
+                                                >
+                                                    Logout
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    // If NOT logged in → show login/register redirect icon
+                                    <FaUserCircle
+                                        size={28}
+                                        className="cursor-pointer text-white hover:text-gray-200 transition"
+                                        onClick={handleProfileClick}
+                                        title="Login / Register"
+                                    />
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -261,17 +381,18 @@ export default function Navbar() {
 
                         {/* Navigation */}
                         <nav className="flex flex-col gap-6 text-lg font-semibold text-gray-800">
-                            {[{ href: '/', label: 'Home' },
-                            { href: '/products', label: 'Shop' },
-                            { href: '/about', label: 'About' },
-                            { href: '/contact', label: 'Contact' },
-                            ...(role === 'admin'
+                            {(role !== 'admin'
                                 ? [
+                                    { href: '/', label: 'Home' },
+                                    { href: '/products', label: 'Shop' },
+                                    { href: '/about', label: 'About' },
+                                    { href: '/contact', label: 'Contact' },
+                                ]
+                                : [
                                     { href: '/admin', label: 'Admin' },
                                     { href: '/admin/analytics', label: 'Analytics' },
                                 ]
-                                : [])
-                            ].map(({ href, label }) => {
+                            ).map(({ href, label }) => {
                                 const isActive = pathname === href;
                                 return (
                                     <Link

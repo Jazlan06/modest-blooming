@@ -113,7 +113,7 @@ export default function AdminAnalyticsDashboard() {
                 setActiveList(data.data);
                 setActivePagination(data.pagination || { page: 1, totalPages: 1 });
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to load active users list");
         }
     };
@@ -129,7 +129,7 @@ export default function AdminAnalyticsDashboard() {
                 setRepeatList(data.data);
                 setRepeatPagination(data.pagination || { page: 1, totalPages: 1 });
             }
-        } catch (err) {
+        } catch {
             toast.error("Failed to load repeat users list");
         }
     };
@@ -151,20 +151,20 @@ export default function AdminAnalyticsDashboard() {
 
     if (loading)
         return (
-            <div className="flex items-center justify-center min-h-screen text-xl text-gray-500">
+            <div className="flex items-center justify-center min-h-screen text-lg text-gray-500">
                 Loading analytics...
             </div>
         );
 
-    // --- Chart Configurations ---
+    // Chart Data
     const productChart = {
         labels: topProducts.map((p) => p.title),
         datasets: [
             {
                 label: "Units Sold",
                 data: topProducts.map((p) => p.totalQuantity),
-                backgroundColor: "rgba(99, 102, 241, 0.6)",
-                borderColor: "#6366F1",
+                backgroundColor: "rgba(236, 72, 153, 0.5)",
+                borderColor: "#ec4899",
                 borderWidth: 2,
             },
         ],
@@ -176,9 +176,10 @@ export default function AdminAnalyticsDashboard() {
             {
                 label: "Revenue (₹)",
                 data: salesReport.map((s) => s.totalRevenue || 0),
-                borderColor: "#16A34A",
+                borderColor: "#22c55e",
                 backgroundColor: "rgba(34,197,94,0.2)",
                 fill: true,
+                tension: 0.4,
             },
         ],
     };
@@ -189,12 +190,12 @@ export default function AdminAnalyticsDashboard() {
             {
                 data: couponStats.map((c) => c.usageCount),
                 backgroundColor: [
-                    "#6366F1",
-                    "#10B981",
-                    "#F59E0B",
-                    "#EF4444",
-                    "#8B5CF6",
-                    "#14B8A6",
+                    "#ec4899",
+                    "#3b82f6",
+                    "#f97316",
+                    "#22c55e",
+                    "#8b5cf6",
+                    "#14b8a6",
                 ],
             },
         ],
@@ -204,92 +205,102 @@ export default function AdminAnalyticsDashboard() {
         <>
             <Navbar />
             <Toaster position="top-right" />
-            <div className="min-h-screen bg-gray-50 pt-[5rem] px-6 md:px-12">
-                <h1 className="text-4xl font-bold text-gray-800 mb-10 text-center font-heading">
-                    Admin Analytics Dashboard
-                </h1>
+            <div className="min-h-screen mt-[4rem] bg-gradient-to-b from-[#fff6f7] to-[#fce7f3] pt-[5rem] px-6 md:px-12">
+                {/* Page Header */}
+                <div className="text-center mb-14">
+                    <h1 className="text-5xl font-extrabold bg-gradient-to-r from-pink-600 via-rose-500 to-red-400 bg-clip-text text-transparent tracking-tight">
+                        Analytics Dashboard
+                    </h1>
+                    <p className="text-gray-600 mt-3 text-lg font-medium max-w-xl mx-auto">
+                        Gain insights into your store’s performance — users, products, and sales all in one glance.
+                    </p>
+                    <div className="w-20 h-[3px] bg-gradient-to-r from-pink-400 to-rose-500 mx-auto mt-6 rounded-full"></div>
+                </div>
 
-                {/* === User Overview Cards === */}
+                {/* === Stat Cards === */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10"
+                    className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
                 >
                     {[
                         {
                             icon: <FaUsers />,
                             title: "Total Users",
                             value: userStats.totalUsers,
-                            color: "bg-indigo-500",
+                            color: "from-pink-400 to-rose-500",
                         },
                         {
                             icon: <FaChartLine />,
                             title: "Active Users Today",
                             value: userStats.activeUsersToday,
-                            color: "bg-green-500",
+                            color: "from-green-400 to-emerald-500",
                         },
                         {
                             icon: <FaRedoAlt />,
                             title: "Repeat Customers",
                             value: userStats.repeatUsers,
-                            color: "bg-yellow-500",
+                            color: "from-amber-400 to-orange-500",
                         },
                     ].map((card, i) => (
                         <motion.div
                             key={i}
-                            whileHover={{ scale: 1.03 }}
+                            whileHover={{ scale: 1.05 }}
                             onClick={() => handleCardClick(card.title)}
-                            className={`rounded-xl shadow-md text-white p-6 flex flex-col items-center justify-center ${card.color} cursor-pointer`}
+                            className={`relative p-8 text-white rounded-2xl cursor-pointer bg-gradient-to-br ${card.color} shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden`}
                         >
-                            <div className="text-3xl mb-3">{card.icon}</div>
-                            <div className="text-lg font-semibold">{card.title}</div>
-                            <div className="text-3xl font-bold mt-1">{card.value}</div>
+                            <div className="absolute inset-0 bg-white opacity-10 blur-3xl group-hover:opacity-20 transition-all"></div>
+                            <div className="relative z-10 flex flex-col items-center justify-center text-center">
+                                <div className="text-4xl mb-3 drop-shadow-sm">{card.icon}</div>
+                                <h3 className="text-lg font-semibold">{card.title}</h3>
+                                <p className="text-3xl font-bold mt-2">{card.value}</p>
+                            </div>
                         </motion.div>
                     ))}
                 </motion.div>
 
-                {/* === Top Products & Sales Charts === */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
-                    {/* Top Selling Products */}
+                {/* === Charts Section === */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-14">
+                    {/* Top Products */}
                     <motion.div
-                        initial={{ opacity: 0, y: 15 }}
+                        initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-xl shadow-md p-6"
+                        className="bg-white/70 backdrop-blur-lg rounded-3xl shadow-lg hover:shadow-2xl p-8 transition-all border border-white/50"
                     >
-                        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-700">
-                            <FaTags className="text-indigo-600" /> Top Selling Products
+                        <h2 className="text-2xl font-semibold mb-5 flex items-center gap-2 text-gray-800">
+                            <FaTags className="text-pink-500" /> Top Selling Products
                         </h2>
                         <Bar data={productChart} />
                     </motion.div>
 
                     {/* Sales Revenue */}
                     <motion.div
-                        initial={{ opacity: 0, y: 15 }}
+                        initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-xl shadow-md p-6"
+                        className="bg-white/70 backdrop-blur-lg rounded-3xl shadow-lg hover:shadow-2xl p-8 transition-all border border-white/50"
                     >
-                        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-700">
-                            <FaChartLine className="text-green-600" /> Sales Revenue by Event
+                        <h2 className="text-2xl font-semibold mb-5 flex items-center gap-2 text-gray-800">
+                            <FaChartLine className="text-green-500" /> Sales Revenue by Event
                         </h2>
                         <Line data={salesChart} />
                     </motion.div>
                 </div>
 
-                {/* === Coupon Stats === */}
+                {/* === Coupon Usage === */}
                 <motion.div
-                    initial={{ opacity: 0, y: 15 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-xl shadow-md p-6 max-w-3xl mx-auto"
+                    className="bg-white/70 backdrop-blur-lg rounded-3xl shadow-lg hover:shadow-2xl p-8 max-w-3xl mx-auto transition-all border border-white/50"
                 >
-                    <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-700">
-                        <FaTags className="text-pink-500" /> Coupon Usage Stats
+                    <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2 text-gray-800">
+                        <FaTags className="text-rose-500" /> Coupon Usage Stats
                     </h2>
-                    <div className="w-[60%] mx-auto">
+                    <div className="w-[70%] mx-auto">
                         <Doughnut data={couponChart} />
                     </div>
                 </motion.div>
 
-                {/* === Active Users Modal === */}
+                {/* === Modals === */}
                 {showActiveModal && (
                     <Modal
                         title="Active Users Today"
@@ -299,8 +310,6 @@ export default function AdminAnalyticsDashboard() {
                         onPageChange={fetchActiveUsersList}
                     />
                 )}
-
-                {/* === Repeat Customers Modal === */}
                 {showRepeatModal && (
                     <Modal
                         title="Repeat Customers"
@@ -315,62 +324,69 @@ export default function AdminAnalyticsDashboard() {
     );
 }
 
+// --- Enhanced Modal ---
 function Modal({ title, users, pagination, onClose, onPageChange }) {
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-[90%] max-w-3xl shadow-lg">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
+            <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-3xl"
+            >
+                <div className="flex justify-between items-center mb-4 border-b pb-3">
+                    <h2 className="text-xl font-bold text-gray-800">{title}</h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700"
+                        className="text-gray-500 hover:text-gray-700 text-xl font-bold"
                     >
-                        ✖
+                        ✕
                     </button>
                 </div>
 
-                <table className="w-full text-left border">
-                    <thead>
-                        <tr className="bg-gray-100">
-                            <th className="p-2 border">Name</th>
-                            <th className="p-2 border">Email</th>
-                            <th className="p-2 border">Joined</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {users.map((u) => (
-                            <tr key={u._id} className="hover:bg-gray-50">
-                                <td className="p-2 border">{u.name || "N/A"}</td>
-                                <td className="p-2 border">{u.email}</td>
-                                <td className="p-2 border">
-                                    {new Date(u.createdAt).toLocaleDateString()}
-                                </td>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border border-gray-200 text-sm">
+                        <thead>
+                            <tr className="bg-gray-100 text-gray-700">
+                                <th className="p-2 border">Name</th>
+                                <th className="p-2 border">Email</th>
+                                <th className="p-2 border">Joined</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {users.map((u) => (
+                                <tr key={u._id} className="hover:bg-gray-50 transition">
+                                    <td className="p-2 border">{u.name || "N/A"}</td>
+                                    <td className="p-2 border">{u.email}</td>
+                                    <td className="p-2 border">
+                                        {new Date(u.createdAt).toLocaleDateString()}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
 
                 {/* Pagination */}
-                <div className="flex justify-between items-center mt-4">
+                <div className="flex justify-between items-center mt-5">
                     <button
                         disabled={pagination.page <= 1}
                         onClick={() => onPageChange(pagination.page - 1)}
-                        className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+                        className="px-3 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 disabled:opacity-50"
                     >
                         Prev
                     </button>
-                    <span>
+                    <span className="text-sm text-gray-500">
                         Page {pagination.page} of {pagination.totalPages}
                     </span>
                     <button
                         disabled={pagination.page >= pagination.totalPages}
                         onClick={() => onPageChange(pagination.page + 1)}
-                        className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+                        className="px-3 py-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 disabled:opacity-50"
                     >
                         Next
                     </button>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 }

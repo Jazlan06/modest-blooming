@@ -10,6 +10,7 @@ export default function OrderManagementPage() {
     const today = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(today.getDate() - 30);
+
     const formatDate = (date) => date.toISOString().split("T")[0];
 
     const [orders, setOrders] = useState([]);
@@ -17,28 +18,23 @@ export default function OrderManagementPage() {
     const [updatingId, setUpdatingId] = useState(null);
     const [statusUpdate, setStatusUpdate] = useState({});
     const [expandedId, setExpandedId] = useState(null);
-
     const [filters, setFilters] = useState({
         status: "",
         customer: "",
         dateFrom: formatDate(thirtyDaysAgo),
         dateTo: formatDate(today),
     });
-
     const [debouncedCustomer, setDebouncedCustomer] = useState(filters.customer);
-
-    // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const ordersPerPage = 5;
-
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
 
     // Debounce for customer filter
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedCustomer(filters.customer);
-        }, 400); // 400ms debounce
+        }, 400);
         return () => clearTimeout(handler);
     }, [filters.customer]);
 
@@ -51,9 +47,10 @@ export default function OrderManagementPage() {
                 limit: ordersPerPage,
                 status: filters.status,
                 customer: debouncedCustomer,
-                dateFrom: filters.dateFrom,
-                dateTo: filters.dateTo,
             });
+
+            if (filters.dateFrom) params.append("dateFrom", filters.dateFrom);
+            if (filters.dateTo) params.append("dateTo", filters.dateTo);
 
             const res = await fetch(`${API_URL}/api/orders?${params.toString()}`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -73,8 +70,15 @@ export default function OrderManagementPage() {
 
     // Fetch orders whenever filters, page, or debouncedCustomer changes
     useEffect(() => {
-        fetchOrders(currentPage);
-    }, [filters.status, filters.dateFrom, filters.dateTo, debouncedCustomer, currentPage]);
+        setCurrentPage(1);
+        fetchOrders(1);
+    }, [filters.status, filters.dateFrom, filters.dateTo, debouncedCustomer]);
+
+    useEffect(() => {
+        if (currentPage !== 1) {
+            fetchOrders(currentPage);
+        }
+    }, [currentPage]);
 
     const handleStatusUpdate = async (orderId) => {
         if (!statusUpdate[orderId]) return toast.error("Select a status first");
@@ -215,7 +219,7 @@ export default function OrderManagementPage() {
                                                         Order ID: {order._id.slice(-6).toUpperCase()}
                                                     </p>
                                                     <p className="text-gray-600">
-                                                        Customer: {order.user?.name || "Unknown"} ({order.user?.email})
+                                                        Customer: {order.user?.name || "Unknown"} ({order.user?.email || "Unknown"})
                                                     </p>
                                                     <p className="text-gray-600">
                                                         Total: ₹{order.totalAmount.toFixed(2)} | Delivery: ₹{order.deliveryCharge?.toFixed(2) || 0}
@@ -268,12 +272,12 @@ export default function OrderManagementPage() {
                                                     >
                                                         <div>
                                                             <h3 className="font-semibold mb-1">Products:</h3>
-                                                            {order.products.map((p) => (
-                                                                <div key={p.product?._id} className="flex justify-between py-1">
+                                                            {order.products.map((p, i) => (
+                                                                <div key={i} className="flex justify-between py-1">
                                                                     <span>
                                                                         {p.product?.name || "Product"} x {p.quantity} ({p.selectedVariant || "Default"})
                                                                     </span>
-                                                                    <span>₹{p.priceAtPurchase.toFixed(2)}</span>
+                                                                    <span>₹{p.priceAtPurchase ? p.priceAtPurchase.toFixed(2) : 0}</span>
                                                                 </div>
                                                             ))}
                                                         </div>

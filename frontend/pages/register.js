@@ -58,7 +58,7 @@ export default function RegisterPage() {
     return (
         <>
             <Navbar />
-            <div className="min-h-screen bg-gradient-to-b from-[#F4C2C2] via-[#F9E4E4] to-[#FFEDED] flex items-center justify-center px-4">
+            <div className="min-h-screen bg-gradient-to-b from-[#F4C2C2] via-[#F9E4E4] to-[#FFEDED] flex items-center justify-center px-4 mt-[3rem]">
                 <div className="bg-white shadow-lg rounded-lg max-w-md w-full p-8 space-y-6 animate-fadeIn relative">
                     {successModal && (
                         <div className="absolute inset-0 bg-green-50 bg-opacity-90 flex flex-col items-center justify-center rounded-lg z-20 p-6">

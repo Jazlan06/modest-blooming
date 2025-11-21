@@ -55,7 +55,14 @@ const NewArrivalsSection = ({ products }) => {
                                             {product.name}
                                         </h3>
                                         <p className="text-sm text-gray-600 mt-1 font-body">
-                                            ₹{product.price}
+                                            {product.discountPrice ? (
+                                                <>
+                                                    <span className="font-semibold text-gray-900">₹{product.discountPrice}</span>{' '}
+                                                    <span className="line-through text-gray-400">₹{product.price}</span>
+                                                </>
+                                            ) : (
+                                                <span className="font-semibold text-gray-900">₹{product.price}</span>
+                                            )}
                                         </p>
                                         <button className="mt-4 bg-[#F4C2C2] text-white font-semibold py-2 rounded hover:bg-pink-300 transition-colors text-sm font-body">
                                             View Details

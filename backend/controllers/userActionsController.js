@@ -20,10 +20,10 @@ const addToCart = async (req, res) => {
                 selectedColor: selectedColor || { colorName: null, colorCode: null }
             });
         }
-
+        user.wishlist = user.wishlist.filter(id => id.toString() !== productId);
         await user.save();
         await user.populate("cart.product");
-        res.json({ cart: user.cart });
+        res.json({ cart: user.cart, wishlist: user.wishlist });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

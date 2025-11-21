@@ -298,7 +298,7 @@ We're sorry for the inconvenience and hope to serve you better next time.
 exports.getMyOrders = async (req, res) => {
     try {
         const orders = await Order.find({ user: req.user.userId })
-            .populate('products.product', 'title price')
+            .populate('products.product', 'name price')
             .sort({ createdAt: -1 });
 
         res.json(orders);
@@ -334,9 +334,11 @@ exports.getAllOrders = async (req, res) => {
         if (dateFrom || dateTo) {
             query.createdAt = {};
             if (dateFrom) query.createdAt.$gte = new Date(dateFrom);
-            if (dateTo) query.createdAt.$lte = new Date(dateTo);
+            if (dateTo) {
+                const dt = new Date(dateTo);
+                dt.setHours(23, 59, 59, 999); 
+            }
         }
-
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
         // Count total documents matching the filters
@@ -356,6 +358,30 @@ exports.getAllOrders = async (req, res) => {
             currentPage: parseInt(page),
             totalOrders
         });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.getOrderById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.userId;
+        const userIsAdmin = req.user.role === 'admin'; // assuming role is set in JWT
+
+        const order = await Order.findById(id)
+            .populate('products.product', 'name price')
+            .populate('user', 'name email');
+
+        if (!order) return res.status(404).json({ message: 'Order not found' });
+
+        // Only allow access if the user owns the order or is admin
+        if (!userIsAdmin && order.user._id.toString() !== userId) {
+            return res.status(403).json({ message: 'Access denied' });
+        }
+
+        res.json({ order });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

@@ -256,7 +256,7 @@ export default function AddressPage() {
                 </form>
             )}
 
-            <Stepper steps={steps} currentStep={currentStep} />
+            {isPaymentFlow && <Stepper steps={steps} currentStep={currentStep} />}
 
             {/* ===== Address List ===== */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
@@ -304,19 +304,37 @@ export default function AddressPage() {
                         className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-all"
                         onClick={() => setShowForm(true)}
                     >
-                        {isPaymentFlow ? 'Add New Address' : 'Add Address'}
+                        {isPaymentFlow ? "Add New Address" : "Add Address"}
                     </button>
 
-                    {/* Proceed to Payment if default exists */}
-                    {addresses.some(addr => addr.isDefault) && isPaymentFlow && (
+                    {/* Proceed to Payment only if user has a default address */}
+                    {addresses.some((addr) => addr.isDefault) && isPaymentFlow && (
                         <button
                             onClick={() => {
-                                const order = localStorage.getItem("currentOrder");
-                                if (!order) {
-                                    alert("No order found. Please try again.");
+                                // ✅ Retrieve temporary order info (from /cart)
+                                const tempOrder = localStorage.getItem("tempOrder");
+                                if (!tempOrder) {
+                                    alert("No order details found. Please try again.");
                                     router.push("/cart");
                                     return;
                                 }
+
+                                // ✅ Parse and attach the selected/default address
+                                const parsedOrder = JSON.parse(tempOrder);
+                                const defaultAddress = addresses.find((addr) => addr.isDefault);
+
+                                if (!defaultAddress) {
+                                    alert("Please select a delivery address.");
+                                    return;
+                                }
+
+                                // ✅ Store address details into tempOrder for payment page
+                                parsedOrder.addressId = defaultAddress._id;
+                                parsedOrder.address = defaultAddress;
+
+                                localStorage.setItem("tempOrder", JSON.stringify(parsedOrder));
+
+                                // ✅ Move to payment page
                                 router.push("/payment");
                             }}
                             className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium shadow-md transition-all"

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import ProductGrid from '@/components/ProductGrid';
 import Filter from '@/components/Filter';
+import Footer from '@/components/Footer';
 import { useRouter } from 'next/router';
 
 export default function ProductsPage({ initialData, filterOptions }) {
@@ -57,49 +58,52 @@ export default function ProductsPage({ initialData, filterOptions }) {
     };
 
     return (
-        <div className="container mx-auto py-6">
-            <Filter filterOptions={filterOptions} />
+        <>
+            <div className="container mx-auto py-6">
+                <Filter filterOptions={filterOptions} />
 
-            {loading ? (
-                <div className="text-center py-10 text-gray-600 font-semibold">Loading...</div>
-            ) : (
-                <>
-                    <ProductGrid products={products} />
+                {loading ? (
+                    <div className="text-center py-10 text-gray-600 font-semibold">Loading...</div>
+                ) : (
+                    <>
+                        <ProductGrid products={products} />
 
-                    {/* Pagination Controls */}
-                    <div className="flex justify-center items-center mt-10 space-x-2">
-                        <button
-                            onClick={() => changePage(page - 1)}
-                            disabled={page <= 1}
-                            className="px-3 py-2 border rounded-md text-gray-600 hover:bg-gray-100 disabled:opacity-40"
-                        >
-                            Prev
-                        </button>
-
-                        {Array.from({ length: totalPages }, (_, i) => (
+                        {/* Pagination Controls */}
+                        <div className="flex justify-center items-center mt-10 space-x-2">
                             <button
-                                key={i}
-                                onClick={() => changePage(i + 1)}
-                                className={`px-3 py-2 border rounded-md ${page === i + 1
-                                    ? 'bg-blue-500 text-white border-blue-500'
-                                    : 'hover:bg-gray-100 text-gray-700'
-                                    }`}
+                                onClick={() => changePage(page - 1)}
+                                disabled={page <= 1}
+                                className="px-3 py-2 border rounded-md text-gray-600 hover:bg-gray-100 disabled:opacity-40"
                             >
-                                {i + 1}
+                                Prev
                             </button>
-                        ))}
 
-                        <button
-                            onClick={() => changePage(page + 1)}
-                            disabled={page >= totalPages}
-                            className="px-3 py-2 border rounded-md text-gray-600 hover:bg-gray-100 disabled:opacity-40"
-                        >
-                            Next
-                        </button>
-                    </div>
-                </>
-            )}
-        </div>
+                            {Array.from({ length: totalPages }, (_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => changePage(i + 1)}
+                                    className={`px-3 py-2 border rounded-md ${page === i + 1
+                                        ? 'bg-blue-500 text-white border-blue-500'
+                                        : 'hover:bg-gray-100 text-gray-700'
+                                        }`}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+
+                            <button
+                                onClick={() => changePage(page + 1)}
+                                disabled={page >= totalPages}
+                                className="px-3 py-2 border rounded-md text-gray-600 hover:bg-gray-100 disabled:opacity-40"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </>
+                )}
+            </div>
+            <Footer />
+        </>
     );
 }
 

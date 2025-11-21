@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react';
 import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer';
 import NewArrivalsSection from '@/components/homepage/NewArrivalsSection'
 import HorizontalInfiniteCarousel from '@/components/common/HorizontalInfiniteCarousel'
 
@@ -49,20 +50,26 @@ export default function HomePage({ content }) {
             try {
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`);
                 const data = await res.json();
-                setAllProducts(data || []);
-
+                setAllProducts(data.products || data || []);
+                console.log("Fetched products data:", data);
                 // 👉 Compute unique categories based on fetched data
                 const uniqueCategoryMap = new Map();
 
-                data.forEach((product) => {
+                data.products.forEach((product) => {
                     const category = product.category;
-                    if (!uniqueCategoryMap.has(category) && product.media?.[0]) {
+                    if (!uniqueCategoryMap.has(category)) {
+                        const categoryImage =
+                            product.media?.[0] ||
+                            product.colors?.find(c => c.images?.length > 0)?.images[0] ||
+                            '/placeholder-category.jpg';
+
                         uniqueCategoryMap.set(category, {
                             name: category,
-                            image: product.media[0]
+                            image: categoryImage,
                         });
                     }
                 });
+
 
                 const uniqueCategoryArray = Array.from(uniqueCategoryMap.values());
                 setUniqueCategories(uniqueCategoryArray); // ✅ Update state
@@ -347,19 +354,28 @@ export default function HomePage({ content }) {
                                     itemsPerView={3}
                                     scrollSpeed={0.5}
                                     showDots={true}
+                                    isClickable={true}
                                     renderItem={(product) => (
                                         <div className="bg-white shadow rounded pb-3">
                                             <img
-                                                src={product.media?.[0]}
+                                                src={product.media?.[0] ||
+                                                    product.colors?.[0]?.images?.[0]}
                                                 alt={product.name}
                                                 className="h-48 object-fill w-full rounded"
                                                 loading="lazy"
                                             />
-                                            <h3 className="text-lg text-left ml-2 font-semibold font-display mt-2">
+                                            <h3 className="text-lg text-left ml-2 font-semibold font-display mt-2 truncate">
                                                 {product.name}
                                             </h3>
-                                            <p className="text-pink-700 text-left ml-3 font-semi-bold font-body">
-                                                ₹{product.price}
+                                            <p className="text-left ml-3 font-body">
+                                                {product.discountPrice ? (
+                                                    <>
+                                                        <span className="text-pink-700 font-semibold">₹{product.discountPrice}</span>{' '}
+                                                        <span className="line-through ml-1 text-gray-400">₹{product.price}</span>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-pink-700 font-semibold">₹{product.price}</span>
+                                                )}
                                             </p>
                                         </div>
                                     )}
@@ -376,12 +392,13 @@ export default function HomePage({ content }) {
                                     >
                                         <div className="bg-white shadow rounded p-0 pb-3 transform transition duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer">
                                             <img
-                                                src={product.media?.[0]}
+                                                src={product.media?.[0] ||
+                                                    product.colors?.[0]?.images?.[0]}
                                                 alt={product.name}
                                                 className="h-48 md:h-64 object-fill w-full rounded-t"
                                                 loading="lazy"
                                             />
-                                            <h3 className="text-lg text-left ml-2 font-semibold font-display mt-2">
+                                            <h3 className="text-lg text-left ml-2 font-semibold font-display mt-2 truncate">
                                                 {product.name}
                                             </h3>
                                             <p className="text-pink-700 text-left ml-3 font-semi-bold font-body">
@@ -406,33 +423,27 @@ export default function HomePage({ content }) {
                                 items={uniqueCategories}
                                 scrollSpeed={0.5}
                                 showDots={true}
+                                isClickable={false}
                                 renderItem={(cat) => (
-                                    <Link
-                                        href={`/category/${cat.name.toLowerCase().replace(/\s+/g, '-')}`}
-                                        passHref
-                                    >
-                                        <div className="group bg-white shadow-md rounded overflow-hidden transform transition duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer">
-                                            <img
-                                                src={cat.image}
-                                                alt={cat.name}
-                                                className="w-full h-52 object-fill"
-                                                loading="lazy"
-                                            />
-                                            <div className="py-3 text-center">
-                                                <h3 className="text-lg font-semibold font-display">{cat.name}</h3>
-                                            </div>
+                                    <div className="group bg-white shadow-md rounded overflow-hidden transform transition duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer">
+                                        <img
+                                            src={cat.image}
+                                            alt={cat.name}
+                                            className="w-full h-52 object-fill"
+                                            loading="lazy"
+                                        />
+                                        <div className="py-3 text-center">
+                                            <h3 className="text-lg font-semibold font-display">{cat.name}</h3>
                                         </div>
-                                    </Link>
+                                    </div>
                                 )}
                             />
                         </div>
                     </section>
                 )}
 
-
-
-
             </main>
+            <Footer />
         </>
     )
 }

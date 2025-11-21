@@ -8,6 +8,7 @@ import {
     FaWhatsapp
 } from "react-icons/fa";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const ContactPage = () => {
     return (
@@ -164,6 +165,7 @@ const ContactPage = () => {
           .animation-delay-2000 { animation-delay: 2s; }
         `}</style>
             </div>
+            <Footer />
         </>
     );
 };

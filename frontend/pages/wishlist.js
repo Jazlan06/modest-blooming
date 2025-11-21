@@ -112,6 +112,18 @@ export default function WishlistPage() {
         fetchWishlist();
     }, []);
 
+    useEffect(() => {
+        const uniqueCategories = [
+            ...new Set(wishlist.map((item) => item.category).filter(Boolean)),
+        ];
+        setCategories(["All", ...uniqueCategories]);
+
+        if (!["All", ...uniqueCategories].includes(activeCategory)) {
+            setActiveCategory("All");
+        }
+    }, [wishlist]);
+
+
     if (loading)
         return (
             <div className="flex items-center justify-center min-h-screen text-lg text-gray-500 font-medium">

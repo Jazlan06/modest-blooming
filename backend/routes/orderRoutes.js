@@ -1,9 +1,10 @@
 const express = require('express');
 const {
-  placeOrder,
-  updateOrderStatus,
-  getMyOrders,
-  getAllOrders
+    placeOrder,
+    updateOrderStatus,
+    getMyOrders,
+    getAllOrders,
+    getOrderById
 } = require('../controllers/orderController');
 const { isAuthenticated, isAdmin } = require('../middleware/auth');
 const router = express.Router();
@@ -16,5 +17,7 @@ router.get('/my', isAuthenticated, getMyOrders);
 router.put('/:id/status', isAuthenticated, isAdmin, updateOrderStatus);
 // Admin: get all orders
 router.get('/', isAuthenticated, isAdmin, getAllOrders);
+// Get single order by ID
+router.get('/:id', isAuthenticated, getOrderById);
 
 module.exports = router;

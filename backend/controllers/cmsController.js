@@ -142,12 +142,18 @@ const updateHomePageConfig = async (req, res) => {
             });
         }
 
+        const getFileByFieldName = (fieldName) => {
+            if (!Array.isArray(req.files)) return null;
+            return req.files.find(f => f.fieldname === fieldName) || null;
+        };
+
+
         // Helper for single banner merges
         const mergeSingleBanner = (fieldName, metaFieldName, fileFieldName) => {
             if (data[metaFieldName]) {
                 const meta = parseJsonSafely(data[metaFieldName]);
                 const existing = config[fieldName] || {};
-                const file = files?.[fileFieldName]?.[0];
+                const file = getFileByFieldName(fileFieldName);
 
                 config[fieldName] = {
                     ...existing,
@@ -162,6 +168,8 @@ const updateHomePageConfig = async (req, res) => {
         mergeSingleBanner('bestSellerBanner', 'bestSellerBannerMeta', 'bestSellerBanner');
         mergeSingleBanner('saleBanner', 'saleBannerMeta', 'saleBanner');
 
+        const announcementFiles = req.files.filter(f => f.fieldname === 'announcementImages');
+
         // Announcements (array)
         if (data.announcementMeta) {
             const metas = Array.isArray(data.announcementMeta)
@@ -171,7 +179,7 @@ const updateHomePageConfig = async (req, res) => {
             const existingAnnouncements = config.announcements || [];
 
             config.announcements = metas.map((meta, i) => {
-                const file = files?.announcementImages?.[i];
+                const file = announcementFiles[i];
                 const existing = existingAnnouncements[i] || {};
 
                 return {

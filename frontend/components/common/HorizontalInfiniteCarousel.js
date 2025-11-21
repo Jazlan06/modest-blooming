@@ -10,6 +10,7 @@ const HorizontalInfiniteCarousel = ({
     className = '',
     containerClass = '',
     showDots = true,
+    isClickable = true
 }) => {
     const scrollRef = useRef(null)
     const [userInteracted, setUserInteracted] = useState(false)

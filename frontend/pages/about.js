@@ -1,5 +1,6 @@
 import { FaLeaf, FaGem, FaShippingFast, FaHeart } from "react-icons/fa";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const AboutPage = () => {
     return (
@@ -231,6 +232,7 @@ const AboutPage = () => {
     scrollbar-width: none;
         `}</style>
             </div>
+            <Footer />
         </>
     );
 };

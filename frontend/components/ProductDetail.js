@@ -1,9 +1,12 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import Navbar from "./Navbar";
+import Footer from "./Footer";
 import { FaRegHeart } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion"; // ✅ Added
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-hot-toast";
 import { useWishlist } from "@/context/WishlistContext";
+import { useCart } from "@/context/CartContext";
 import { useGesture } from "@use-gesture/react";
 import { animated, useSpring } from "@react-spring/web";
 import ProductFeedback from "./ProductFeedback";
@@ -11,7 +14,9 @@ import RecommendedProducts from "./RecommendedProducts";
 
 const ProductDetail = ({ product, user }) => {
     const { wishlist, toggleWishlist } = useWishlist();
-    const [floatingHearts, setFloatingHearts] = useState([]); // ❤️ floating hearts
+    const { fetchCart: refreshGlobalWishlist } = useCart();
+    const [loading, setLoading] = useState(false);
+    const [floatingHearts, setFloatingHearts] = useState([]);
     const [isZoomed, setIsZoomed] = useState(false);
     const [selectedColor, setSelectedColor] = useState(
         product.colors?.[0] || null
@@ -50,6 +55,52 @@ const ProductDetail = ({ product, user }) => {
             (m) => !(selectedColor?.images || []).includes(m)
         ) || []),
     ];
+
+    const addToCart = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) return toast.error("Login required");
+
+        const payload = {
+            productId: product._id,
+            quantity: 1,
+        };
+
+        // If product has colors → attach the selected color variant
+        if (product.colors?.length > 0 && selectedColor) {
+            payload.selectedColor = {
+                colorName: selectedColor.colorName,
+                colorCode: selectedColor.colorCode,
+            };
+        }
+
+        try {
+            setLoading(true);
+
+            const res = await fetch(`http://localhost:5000/api/user/cart/${product._id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                toast.error(data?.message || "Failed to add to cart");
+                return;
+            }
+
+            toast.success("Added to cart");
+            refreshGlobalWishlist();
+        } catch (err) {
+            console.error(err);
+            toast.error("Something went wrong");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const isInWishlist = wishlist.some(item => item._id === product._id);
 
@@ -287,8 +338,13 @@ const ProductDetail = ({ product, user }) => {
 
                             {/* Buttons */}
                             <div className="mt-8 flex items-center gap-3">
-                                <button className="flex-1 py-3 bg-accent min-w-[320px] text-white rounded-lg text-lg font-bold transition hover:bg-primary">
-                                    Add to Cart
+                                <button
+                                    onClick={addToCart}
+                                    disabled={loading}
+                                    className={`flex-1 py-3 min-w-[290px] text-white rounded-lg text-lg font-bold transition ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-accent hover:bg-primary"
+                                        }`}
+                                >
+                                    {loading ? "Adding..." : "Add to Cart"}
                                 </button>
                                 <button
                                     onClick={(e) => {
@@ -317,6 +373,7 @@ const ProductDetail = ({ product, user }) => {
                 category={product.category}
                 currentProductId={product._id}
             />
+            <Footer />
         </>
     );
 };

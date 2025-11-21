@@ -309,7 +309,7 @@ export default function CartPage() {
                                         }
                                         alt={p.name || "Product image"}
                                         fill
-                                        className="object-cover rounded-md group-hover:opacity-90 transition"
+                                        className="object-fill rounded-md group-hover:opacity-90 transition"
                                     />
                                 </div>
 
@@ -507,49 +507,31 @@ export default function CartPage() {
                         {cart.length} item(s) selected
                     </p>
                     <button
-                        onClick={async () => {
+                        onClick={() => {
                             try {
                                 const token = localStorage.getItem("token");
                                 if (!token) return alert("Please login to place order");
-                                if (!userAddress) return alert("Please select an address");
 
-                                const res = await fetch("http://localhost:5000/api/orders/", {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                        Authorization: `Bearer ${token}`,
-                                    },
-                                    body: JSON.stringify({
-                                        products: cart.map((item) => ({
-                                            product: item.product._id,
-                                            quantity: item.quantity,
-                                            selectedVariant: item.selectedVariant,
-                                            priceAtPurchase:
-                                                item.product.discountPrice || item.product.price,
-                                        })),
-                                        totalAmount: priceDetails.totalAmount,
-                                        couponApplied: appliedCoupon || null,
-                                        addressId: userAddress._id,
-                                        isHamper,
-                                        hamperNote,
-                                    }),
-                                });
+                                // ✅ Save all order data temporarily (no DB yet)
+                                const tempOrder = {
+                                    products: cart.map((item) => ({
+                                        product: item.product._id,
+                                        name: item.product.name,
+                                        quantity: item.quantity,
+                                        selectedVariant: item.selectedVariant,
+                                        priceAtPurchase: item.product.discountPrice || item.product.price,
+                                    })),
+                                    priceDetails,
+                                    couponApplied: appliedCoupon || null,
+                                    isHamper,
+                                    hamperNote,
+                                };
 
-                                if (!res.ok) {
-                                    const errorData = await res.text();
-                                    throw new Error(`Order creation failed: ${errorData}`);
-                                }
-                                const data = await res.json();
-                                if (!data || !data.order || !data.order._id) {
-                                    console.error("❌ Invalid order response:", data);
-                                    alert("Something went wrong creating the order.");
-                                    return;
-                                }
-                                localStorage.setItem("currentOrder", JSON.stringify(data.order));
+                                localStorage.setItem("tempOrder", JSON.stringify(tempOrder));
                                 router.push(`/address?redirect=payment`);
                             } catch (err) {
-                                alert(err.message);
-                                console.error(err);
+                                console.error("❌ Error saving temp order:", err);
+                                alert("Something went wrong. Try again.");
                             }
                         }}
                         className="font-body bg-gradient-to-r from-[#F4C2C2] to-pink-400 text-white px-6 py-2.5 rounded-md font-semibold hover:opacity-90 transition-all shadow-sm hover:shadow-md"
