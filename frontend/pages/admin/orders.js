@@ -3,10 +3,11 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
 import Navbar from "@/components/Navbar";
+import withAdminAuth from '@/utils/withAdminAuth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export default function OrderManagementPage() {
+function OrderManagementPage() {
     const today = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(today.getDate() - 30);
@@ -335,3 +336,4 @@ export default function OrderManagementPage() {
         </>
     );
 }
+export default withAdminAuth(OrderManagementPage);

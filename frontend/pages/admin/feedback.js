@@ -1,7 +1,8 @@
 import FeedbackManagement from '@/components/admin/FeedbackManagement';
 import Navbar from '@/components/Navbar';
+import withAdminAuth from '@/utils/withAdminAuth';
 
-export default function AdminFeedbackPage() {
+function AdminFeedbackPage() {
     return (
         <>
             <Navbar />
@@ -9,3 +10,4 @@ export default function AdminFeedbackPage() {
         </>
     )
 }
+export default withAdminAuth(AdminFeedbackPage);

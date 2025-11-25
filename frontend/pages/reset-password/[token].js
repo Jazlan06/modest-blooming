@@ -2,11 +2,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '@/components/Navbar';
+import Head from 'next/head';
 
 export default function ResetPasswordPage() {
     const router = useRouter();
     const { token } = router.query;
-
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -47,6 +47,11 @@ export default function ResetPasswordPage() {
 
     return (
         <>
+            <Head>
+                <title>Reset Password | Modest Blooming</title>
+                <meta name="description" content="Reset your account password securely on Modest Blooming." />
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
             <Navbar />
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F4C2C2] via-[#F9E4E4] to-[#FFEDED] px-4">
                 <div className="bg-white shadow-md rounded-lg max-w-md w-full p-8 space-y-6 animate-fadeIn">
@@ -95,3 +100,4 @@ export default function ResetPasswordPage() {
         </>
     );
 }
+ResetPasswordPage.isPrivate = true;

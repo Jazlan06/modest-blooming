@@ -3,7 +3,7 @@ import ProductGrid from '@/components/ProductGrid';
 import Filter from '@/components/Filter';
 import Footer from '@/components/Footer';
 import { useRouter } from 'next/router';
-
+import Head from 'next/head';
 export default function ProductsPage({ initialData, filterOptions }) {
     const [products, setProducts] = useState(initialData.products || []);
     const [loading, setLoading] = useState(false);
@@ -59,6 +59,27 @@ export default function ProductsPage({ initialData, filterOptions }) {
 
     return (
         <>
+            <Head>
+                <title>Shop Trendy Modest Fashion | Hijabs, Scarves & Accessories - Modest Blooming</title>
+                <meta
+                    name="description"
+                    content="Discover the latest collection of hijabs, scarves, modest clothing, and stylish accessories at Modest Blooming. Shop trendy colors, premium fabrics, and elegant designs for women who love modest fashion."
+                />
+                <meta
+                    name="keywords"
+                    content="modest fashion, hijabs online, scarves for women, modest clothing, stylish hijabs, trendy hijabs, women's accessories, modest style, fashionable scarves, modest outfits, hijab shop, modest accessories, Islamic fashion, women's fashion"
+                />
+                <meta property="og:title" content="Shop Trendy Modest Fashion | Modest Blooming" />
+                <meta
+                    property="og:description"
+                    content="Browse our latest collection of hijabs, scarves, and modest fashion accessories. Quality fabrics, elegant designs, and trendy styles for women."
+                />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://www.modestblooming.com/products" />
+                <meta property="og:image" content="https://www.modestblooming.com/og-image-products.jpg" />
+                <meta name="robots" content="index, follow" />
+                <link rel="canonical" href="https://www.modestblooming.com/products" />
+            </Head>
             <div className="container mx-auto py-6">
                 <Filter filterOptions={filterOptions} />
 

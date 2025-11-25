@@ -17,6 +17,7 @@ import { motion } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
 import Navbar from "@/components/Navbar";
 import { FaChartLine, FaTags, FaUsers, FaRedoAlt } from "react-icons/fa";
+import withAdminAuth from '@/utils/withAdminAuth';
 
 ChartJS.register(
     CategoryScale,
@@ -32,7 +33,7 @@ ChartJS.register(
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export default function AdminAnalyticsDashboard() {
+function AdminAnalyticsDashboard() {
     const [topProducts, setTopProducts] = useState([]);
     const [salesReport, setSalesReport] = useState([]);
     const [couponStats, setCouponStats] = useState([]);
@@ -390,3 +391,4 @@ function Modal({ title, users, pagination, onClose, onPageChange }) {
         </div>
     );
 }
+export default withAdminAuth(AdminAnalyticsDashboard);

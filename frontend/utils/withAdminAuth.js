@@ -1,6 +1,7 @@
 // utils/withAdminAuth.js
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 
 export default function withAdminAuth(WrappedComponent) {
     return function ProtectedComponent(props) {
@@ -35,6 +36,13 @@ export default function withAdminAuth(WrappedComponent) {
             return null; // Prevent rendering until authorized
         }
 
-        return <WrappedComponent {...props} />;
+        return (
+            <>
+                <Head>
+                    <meta name="robots" content="noindex, nofollow" />
+                </Head>
+                <WrappedComponent {...props} />
+            </>
+        );
     };
 }

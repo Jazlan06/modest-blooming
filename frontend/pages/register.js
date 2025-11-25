@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '@/components/Navbar';
-
+import Head from 'next/head';
 export default function RegisterPage() {
     const router = useRouter();
     const [formData, setFormData] = useState({
@@ -57,6 +57,27 @@ export default function RegisterPage() {
 
     return (
         <>
+            <Head>
+                <title>Create Account | Modest Blooming - Trendy Hijabs & Modest Fashion</title>
+                <meta
+                    name="description"
+                    content="Register for Modest Blooming to access the latest collection of hijabs, scarves, modest clothing, and accessories. Sign up now for exclusive offers and updates."
+                />
+                <meta
+                    name="keywords"
+                    content="register account, create account, sign up, modest fashion, hijabs online, scarves, women's clothing, Islamic fashion, accessories, trendy hijabs, Modest Blooming"
+                />
+                <meta property="og:title" content="Create Account | Modest Blooming" />
+                <meta
+                    property="og:description"
+                    content="Join Modest Blooming today to explore our latest hijabs, scarves, modest outfits, and stylish accessories. Sign up for exclusive deals and updates."
+                />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://www.modestblooming.com/register" />
+                <meta property="og:image" content="https://www.modestblooming.com/og-image-register.jpg" />
+                <meta name="robots" content="index, follow" />
+                <link rel="canonical" href="https://www.modestblooming.com/register" />
+            </Head>
             <Navbar />
             <div className="min-h-screen bg-gradient-to-b from-[#F4C2C2] via-[#F9E4E4] to-[#FFEDED] flex items-center justify-center px-4 mt-[3rem]">
                 <div className="bg-white shadow-lg rounded-lg max-w-md w-full p-8 space-y-6 animate-fadeIn relative">

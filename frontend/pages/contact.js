@@ -9,10 +9,41 @@ import {
 } from "react-icons/fa";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-
+import Head from "next/head";
 const ContactPage = () => {
     return (
         <>
+            <Head>
+                {/* Basic SEO */}
+                <title>Contact Modest Blooming | Hijabs, Abayas & Accessories</title>
+                <meta
+                    name="description"
+                    content="Get in touch with Modest Blooming for inquiries, feedback, or collaborations. Connect via WhatsApp, email, phone, or visit our store in Mumbai."
+                />
+                <link rel="canonical" href="https://www.modestblooming.com/contact" />
+
+                {/* Open Graph / Facebook */}
+                <meta property="og:title" content="Contact Modest Blooming | Hijabs, Abayas & Accessories" />
+                <meta
+                    property="og:description"
+                    content="Get in touch with Modest Blooming for inquiries, feedback, or collaborations. Connect via WhatsApp, email, phone, or visit our store in Mumbai."
+                />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://www.modestblooming.com/contact" />
+                <meta property="og:image" content="https://www.modestblooming.com/contact-hero.jpg" />
+
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="Contact Modest Blooming | Hijabs, Abayas & Accessories" />
+                <meta
+                    name="twitter:description"
+                    content="Get in touch with Modest Blooming for inquiries, feedback, or collaborations. Connect via WhatsApp, email, phone, or visit our store in Mumbai."
+                />
+                <meta name="twitter:image" content="https://www.modestblooming.com/contact-hero.jpg" />
+
+                {/* Robots */}
+                <meta name="robots" content="index, follow" />
+            </Head>
             <Navbar />
 
             <div className="relative min-h-screen mt-[4rem] md:mt-[7rem] bg-gradient-to-b from-white via-[#fff8f8] to-[#fdeef0] overflow-hidden font-['Poppins']">

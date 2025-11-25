@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Navbar from '@/components/Navbar';
+import withAdminAuth from '@/utils/withAdminAuth';
 
-export default function HomepageCMSAdmin() {
+function HomepageCMSAdmin() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [content, setContent] = useState(null);
@@ -800,3 +801,4 @@ export default function HomepageCMSAdmin() {
         </>
     );
 }
+export default withAdminAuth(HomepageCMSAdmin);

@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import ProductGrid from '@/components/ProductGrid';
 import Navbar from '@/components/Navbar';
 import Filter from '@/components/Filter';
-
+import Head from 'next/head';
 export default function NewArrivalsPage({ initialProducts, filterOptions }) {
     const [products, setProducts] = useState(initialProducts.products || []);
     const [loading, setLoading] = useState(false);
@@ -34,10 +34,10 @@ export default function NewArrivalsPage({ initialProducts, filterOptions }) {
 
                 const url =
                     params.has('category') ||
-                    params.has('tags') ||
-                    params.has('colors') ||
-                    params.has('minPrice') ||
-                    params.has('maxPrice')
+                        params.has('tags') ||
+                        params.has('colors') ||
+                        params.has('minPrice') ||
+                        params.has('maxPrice')
                         ? `http://localhost:5000/api/products/filter?${params}`
                         : `http://localhost:5000/api/products?${params}`;
 
@@ -74,6 +74,41 @@ export default function NewArrivalsPage({ initialProducts, filterOptions }) {
 
     return (
         <>
+            <Head>
+                {/* Page Title */}
+                <title>New Arrivals | Modest Blooming</title>
+
+                {/* Meta Description */}
+                <meta
+                    name="description"
+                    content="Discover the latest hijabs, scarves, and accessories at Modest Blooming. Shop our new arrivals and stay trendy with modest fashion."
+                />
+
+                {/* Robots */}
+                <meta name="robots" content="index, follow" />
+
+                {/* Canonical URL */}
+                <link rel="canonical" href="https://www.modestblooming.com/new-arrivals" />
+
+                {/* Open Graph / Social Media */}
+                <meta property="og:title" content="New Arrivals | Modest Blooming" />
+                <meta
+                    property="og:description"
+                    content="Check out the latest collection of hijabs, scarves, and stylish accessories at Modest Blooming. Shop new arrivals now!"
+                />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://www.modestblooming.com/new-arrivals" />
+                <meta property="og:image" content="https://www.modestblooming.com/new-arrivals-banner.jpg" />
+
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="New Arrivals | Modest Blooming" />
+                <meta
+                    name="twitter:description"
+                    content="Discover the latest hijabs, scarves, and accessories at Modest Blooming. Shop new arrivals today!"
+                />
+                <meta name="twitter:image" content="https://www.modestblooming.com/new-arrivals-banner.jpg" />
+            </Head>
             <Navbar />
             <div className="container mx-auto py-6">
                 <Filter filterOptions={filterOptions} />
@@ -100,11 +135,10 @@ export default function NewArrivalsPage({ initialProducts, filterOptions }) {
                                 <button
                                     key={i}
                                     onClick={() => changePage(i + 1)}
-                                    className={`px-3 py-2 border rounded-md ${
-                                        page === i + 1
-                                            ? 'bg-blue-500 text-white border-blue-500'
-                                            : 'hover:bg-gray-100 text-gray-700'
-                                    }`}
+                                    className={`px-3 py-2 border rounded-md ${page === i + 1
+                                        ? 'bg-blue-500 text-white border-blue-500'
+                                        : 'hover:bg-gray-100 text-gray-700'
+                                        }`}
                                 >
                                     {i + 1}
                                 </button>

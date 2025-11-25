@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
+import withAdminAuth from '@/utils/withAdminAuth';
 
-export default function CouponManager() {
+function CouponManager() {
     const [coupons, setCoupons] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState(null);
@@ -176,8 +177,8 @@ export default function CouponManager() {
                                     setPage(1);
                                 }}
                                 className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${filter === type
-                                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                             >
                                 {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -265,8 +266,8 @@ export default function CouponManager() {
                         <motion.button
                             whileTap={{ scale: 0.95 }}
                             className={`px-6 py-3 rounded-lg text-white font-semibold ${editing
-                                    ? 'bg-yellow-500 hover:bg-yellow-600'
-                                    : 'bg-blue-600 hover:bg-blue-700'
+                                ? 'bg-yellow-500 hover:bg-yellow-600'
+                                : 'bg-blue-600 hover:bg-blue-700'
                                 }`}
                         >
                             {editing ? 'Update Coupon' : 'Create Coupon'}
@@ -297,8 +298,8 @@ export default function CouponManager() {
                                             <motion.div
                                                 key={c._id}
                                                 className={`p-5 border rounded-xl shadow-sm transition-all ${isExpired
-                                                        ? 'bg-red-50 border-red-200'
-                                                        : 'bg-gray-50 hover:shadow-md'
+                                                    ? 'bg-red-50 border-red-200'
+                                                    : 'bg-gray-50 hover:shadow-md'
                                                     }`}
                                                 whileHover={{ scale: 1.02 }}
                                                 layout
@@ -393,3 +394,5 @@ export default function CouponManager() {
         </>
     );
 }
+
+export default withAdminAuth(CouponManager);

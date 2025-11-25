@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Modal from '@/components/Modal';
 import emailSentImg from '../public/logo.png';
-
+import Head from 'next/head';
 export default function VerifyEmail() {
     const [modal, setModal] = useState({
         show: false,
@@ -65,6 +65,27 @@ export default function VerifyEmail() {
 
     return (
         <>
+            <Head>
+                <title>Verify Your Email | Modest Blooming</title>
+                <meta
+                    name="description"
+                    content="Complete your registration at Modest Blooming by verifying your email. Check your inbox for the verification link and confirm your account to start shopping for hijabs, scarves, and modest fashion."
+                />
+                <meta
+                    name="keywords"
+                    content="verify email, email verification, account verification, Modest Blooming, hijabs, scarves, modest fashion, online shopping, secure registration"
+                />
+                <meta property="og:title" content="Verify Your Email | Modest Blooming" />
+                <meta
+                    property="og:description"
+                    content="Complete your registration by verifying your email with Modest Blooming. Start shopping hijabs, scarves, and modest fashion after email confirmation."
+                />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://www.modestblooming.com/verify-email" />
+                <meta property="og:image" content="https://www.modestblooming.com/og-image-verify-email.jpg" />
+                <meta name="robots" content="index, follow" />
+                <link rel="canonical" href="https://www.modestblooming.com/verify-email" />
+            </Head>
             <Navbar />
             <div className="min-h-screen mt-3 flex items-center justify-center bg-gradient-to-br from-[#fdf7f7] via-[#fae5e5] to-[#fdf7f7] px-4">
                 <div className="max-w-md w-full bg-biege rounded-xl shadow-lg p-8 text-center transition-all duration-300">

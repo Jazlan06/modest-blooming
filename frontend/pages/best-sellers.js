@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import ProductGrid from '@/components/ProductGrid';
 import Navbar from '@/components/Navbar';
 import Filter from '@/components/Filter';
-
+import Head from 'next/head';
 export default function BestSellersPage({ initialProducts, filterOptions }) {
     const [products, setProducts] = useState(initialProducts.products || []);
     const [loading, setLoading] = useState(false);
@@ -75,6 +75,23 @@ export default function BestSellersPage({ initialProducts, filterOptions }) {
 
     return (
         <>
+            <Head>
+                <title>Best Selling Products | Modest Blooming</title>
+                <meta
+                    name="description"
+                    content="Discover the top-selling hijabs, abayas, jilbabs, and accessories at Modest Blooming. Shop our most popular collections loved by customers worldwide."
+                />
+                <meta name="keywords" content="best selling hijabs, best abayas, top jilbabs, modest fashion, modest clothing, popular accessories" />
+                <meta property="og:title" content="Best Selling Products | Modest Blooming" />
+                <meta
+                    property="og:description"
+                    content="Explore Modest Blooming's most popular modest fashion items. Find the top hijabs, abayas, and accessories loved by our community."
+                />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://yourwebsite.com/best-sellers" />
+                <meta property="og:image" content="https://yourwebsite.com/og-best-sellers.jpg" />
+                <link rel="canonical" href="https://yourwebsite.com/best-sellers" />
+            </Head>
             <Navbar />
             <div className="container mx-auto py-6">
                 <Filter filterOptions={filterOptions} />

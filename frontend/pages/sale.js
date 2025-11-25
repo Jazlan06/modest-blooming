@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import ProductGrid from '@/components/ProductGrid';
 import Navbar from '@/components/Navbar';
 import Filter from '@/components/Filter';
-
+import Head from 'next/head';
 export default function SalePage({ initialProducts, filterOptions }) {
     const [products, setProducts] = useState(initialProducts.products || []);
     const [loading, setLoading] = useState(false);
@@ -75,6 +75,27 @@ export default function SalePage({ initialProducts, filterOptions }) {
 
     return (
         <>
+            <Head>
+                <title>Sale on Modest Blooming | Hijabs, Scarves & Modest Fashion Discounts</title>
+                <meta
+                    name="description"
+                    content="Shop the latest sale on Modest Blooming! Get exclusive discounts on hijabs, scarves, modest clothing, and accessories. Limited time offers for trendy modest fashion."
+                />
+                <meta
+                    name="keywords"
+                    content="modest fashion sale, hijab sale, scarf discounts, women's modest clothing offers, modest accessories sale, Islamic fashion discounts, Modest Blooming deals, online hijab store sale"
+                />
+                <meta property="og:title" content="Sale on Modest Blooming – Hijabs & Modest Fashion Discounts" />
+                <meta
+                    property="og:description"
+                    content="Discover the best deals on hijabs, scarves, modest clothing, and accessories at Modest Blooming. Limited-time sale for fashion-forward modest wear."
+                />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://www.modestblooming.com/sale" />
+                <meta property="og:image" content="https://www.modestblooming.com/og-image-sale.jpg" />
+                <meta name="robots" content="index, follow" />
+                <link rel="canonical" href="https://www.modestblooming.com/sale" />
+            </Head>
             <Navbar />
             <div className="container mx-auto py-6">
                 <Filter filterOptions={filterOptions} />
@@ -102,8 +123,8 @@ export default function SalePage({ initialProducts, filterOptions }) {
                                     key={i}
                                     onClick={() => changePage(i + 1)}
                                     className={`px-3 py-2 border rounded-md ${page === i + 1
-                                            ? 'bg-blue-500 text-white border-blue-500'
-                                            : 'hover:bg-gray-100 text-gray-700'
+                                        ? 'bg-blue-500 text-white border-blue-500'
+                                        : 'hover:bg-gray-100 text-gray-700'
                                         }`}
                                 >
                                     {i + 1}

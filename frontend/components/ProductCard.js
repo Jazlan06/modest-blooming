@@ -15,7 +15,7 @@ export default function ProductCard({ product }) {
                     <Link href={`/product/${product.slug || product._id}`} passHref>
                         <div className="overflow-hidden">
                             <img
-                                src={product.media[0] || '/placeholder.jpg'}
+                                src={product.media[0] || product.colors?.[0]?.images?.[0] || '/placeholder.jpg'}
                                 alt={product.name}
                                 className="w-full h-48 sm:h-55 md:h-60 object-fill transition duration-300 ease-in-out hover:scale-110"
                             />

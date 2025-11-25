@@ -71,7 +71,7 @@ const Footer = () => {
                                             className="flex items-center gap-2 hover:text-gray-100 transition-colors relative group"
                                         >
                                             <span className="text-white/80">{icon}</span>
-                                            <span className="relative z-10 font-body">{label}</span>
+                                            <span className="relative z-10 font-body text-[1rem]">{label}</span>
                                             <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-white transition-all group-hover:w-full"></span>
                                         </Link>
                                     </li>

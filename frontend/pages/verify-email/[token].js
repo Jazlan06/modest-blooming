@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '@/components/Navbar';
+import Head from 'next/head';
 
 export default function EmailVerificationPage() {
     const router = useRouter();
     const { token } = router.query;
-
     const [status, setStatus] = useState('loading'); // 'loading' | 'success' | 'error'
     const [message, setMessage] = useState('');
 
@@ -32,6 +32,11 @@ export default function EmailVerificationPage() {
 
     return (
         <>
+            <Head>
+                <title>Email Verification | Modest Blooming</title>
+                <meta name="description" content="Verify your Modest Blooming account email securely. Complete your registration to start shopping." />
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
             <Navbar />
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#F4C2C2] via-[#F9E4E4] to-[#FFEDED] px-4">
                 <div className="bg-white shadow-lg rounded-lg max-w-md w-full p-8 text-center font-serif tracking-wide animate-fadeIn">
@@ -86,3 +91,4 @@ export default function EmailVerificationPage() {
         </>
     );
 }
+EmailVerificationPage.isPrivate = true;

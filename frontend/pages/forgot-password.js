@@ -1,7 +1,7 @@
 // pages/forgot-password.js
 import { useState } from 'react';
 import Navbar from '@/components/Navbar';
-
+import Head from 'next/head';
 export default function ForgotPassword() {
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
@@ -34,6 +34,35 @@ export default function ForgotPassword() {
 
     return (
         <>
+            <Head>
+                {/* Basic SEO */}
+                <title>Forgot Password | Modest Blooming</title>
+                <meta
+                    name="description"
+                    content="Reset your Modest Blooming account password securely. Enter your email to receive a password reset link."
+                />
+                <link rel="canonical" href="https://www.modestblooming.com/forgot-password" />
+
+                {/* Open Graph */}
+                <meta property="og:title" content="Forgot Password | Modest Blooming" />
+                <meta
+                    property="og:description"
+                    content="Reset your Modest Blooming account password securely. Enter your email to receive a password reset link."
+                />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://www.modestblooming.com/forgot-password" />
+
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:title" content="Forgot Password | Modest Blooming" />
+                <meta
+                    name="twitter:description"
+                    content="Reset your Modest Blooming account password securely. Enter your email to receive a password reset link."
+                />
+
+                {/* Prevent indexing if desired */}
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
             <Navbar />
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F4C2C2] via-[#F9E4E4] to-[#FFEDED] px-4">
                 <div className="bg-white shadow-md rounded-lg max-w-md w-full p-8 space-y-6 animate-fadeIn relative">
@@ -69,3 +98,4 @@ export default function ForgotPassword() {
         </>
     );
 }
+ForgotPassword.isPrivate = true;

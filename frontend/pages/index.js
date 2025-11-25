@@ -112,23 +112,63 @@ export default function HomePage({ content }) {
     return (
         <>
             <Head>
-                <title>{pageTitle}</title>
-                <meta name="description" content={pageDescription} />
-                <meta name="keywords" content={pageKeywords} />
-                <meta name="robots" content="index, follow" />
-                <meta charSet="UTF-8" />
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                {/* Basic SEO */}
+                <title>Modest Blooming | Hijabs, Abayas & Stylish Modest Fashion</title>
+                <meta
+                    name="description"
+                    content="Explore Modest Blooming's curated collection of hijabs, abayas, scarves, and accessories. Elegant modest fashion crafted for style-conscious women."
+                />
+                <meta name="keywords" content="Modest Fashion, Hijabs, Abayas, Scarves, Women's Accessories, Modest Clothing" />
+                <link rel="canonical" href="https://www.modestblooming.com/" />
 
-                <meta property="og:title" content={pageTitle} />
-                <meta property="og:description" content={pageDescription} />
+                {/* Open Graph / Facebook */}
+                <meta property="og:title" content="Modest Blooming | Hijabs, Abayas & Stylish Modest Fashion" />
+                <meta
+                    property="og:description"
+                    content="Explore Modest Blooming's curated collection of hijabs, abayas, scarves, and accessories. Elegant modest fashion crafted for style-conscious women."
+                />
                 <meta property="og:type" content="website" />
-                {heroBanners[0]?.image && <meta property="og:image" content={heroBanners[0].image} />}
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={pageTitle} />
-                <meta name="twitter:description" content={pageDescription} />
-                {heroBanners[0]?.image && <meta name="twitter:image" content={heroBanners[0].image} />}
-            </Head>
+                <meta property="og:url" content="https://www.modestblooming.com/" />
+                <meta property="og:image" content="https://www.modestblooming.com/og-image.jpg" />
 
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="Modest Blooming | Hijabs, Abayas & Stylish Modest Fashion" />
+                <meta
+                    name="twitter:description"
+                    content="Explore Modest Blooming's curated collection of hijabs, abayas, scarves, and accessories. Elegant modest fashion crafted for style-conscious women."
+                />
+                <meta name="twitter:image" content="https://www.modestblooming.com/og-image.jpg" />
+
+                {/* Structured Data (JSON-LD) */}
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify({
+                            "@context": "https://schema.org",
+                            "@type": "Store",
+                            "name": "Modest Blooming",
+                            "image": "https://www.modestblooming.com/og-image.jpg",
+                            "@id": "https://www.modestblooming.com/",
+                            "url": "https://www.modestblooming.com/",
+                            "telephone": "+917506799689",
+                            "address": {
+                                "@type": "PostalAddress",
+                                "streetAddress": "Mazgaon, Dockyard",
+                                "addressLocality": "Mumbai",
+                                "addressRegion": "MH",
+                                "postalCode": "400010",
+                                "addressCountry": "IN"
+                            },
+                            "sameAs": [
+                                "https://instagram.com/modest.blooming",
+                                "https://www.facebook.com/modestblooming",
+                                "https://wa.me/917506799689"
+                            ]
+                        }),
+                    }}
+                />
+            </Head>
             <Navbar />
 
             <main className="pt-24 sm:pt-30 md:pt-[7rem] space-y-16r">
@@ -150,8 +190,9 @@ export default function HomePage({ content }) {
                                     src={banner.image}
                                     alt={banner.altText || `Hero Banner ${idx + 1}`}
                                     layout="fill"
-                                    objectFit="fill"
+
                                     priority={idx === 0}
+                                    sizes="100vw"
                                 />
 
                                 {/* Banner Text */}

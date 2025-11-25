@@ -34,7 +34,9 @@ exports.createRazorpayOrder = async (req, res) => {
             receipt: receipt || `rcpt_${Date.now()}`,
             payment_capture: 1,
         };
-
+        console.log("Creating Razorpay order with:", options);
+        console.log("Received amount:", amount);
+        console.log("Amount * 100:", Math.round(amount * 100));
         const rzpOrder = await razorpay.orders.create(options);
 
         res.status(200).json({
@@ -83,24 +85,38 @@ exports.verifyAndCreateOrder = async (req, res) => {
         } = checkoutData;
 
         // 3️⃣ Recalculate delivery charge for safety
+        const cartItemsDetailed = await Promise.all(
+            products.map(async (item) => {
+                const prod = await Product.findById(
+                    typeof item.product === "object" ? item.product._id : item.product
+                );
+
+                return {
+                    product: prod,
+                    quantity: item.quantity
+                };
+            })
+        );
+
         const { deliveryCharge } = await calculateDeliveryCharge({
-            cartItems: products,
+            cartItems: cartItemsDetailed,
             address,
             isHamper,
         });
-
-        const finalAmount = totalAmount + deliveryCharge;
+        const finalAmount = Number(totalAmount) + Number(deliveryCharge);
+        if (isNaN(finalAmount)) throw new Error("Invalid finalAmount (NaN)");
 
         // 4️⃣ Prepare order items
         const orderProducts = products.map((item) => ({
-            product: item.product._id,
-            quantity: item.quantity,
-            selectedVariant: item.selectedVariant,
-            priceAtPurchase: item.priceAtPurchase,
+            product: typeof item.product === "object" ? item.product._id : item.product,
+            quantity: Number(item.quantity) || 1,
+            selectedVariant: item.selectedVariant || {},
+            priceAtPurchase: Number(item.priceAtPurchase) || 0,
         }));
 
         // 5️⃣ Coupon check
         let couponId = null;
+
         if (couponApplied) {
             if (/^[0-9a-fA-F]{24}$/.test(couponApplied)) {
                 couponId = couponApplied;
@@ -128,6 +144,12 @@ exports.verifyAndCreateOrder = async (req, res) => {
             status: "completed",
         });
 
+        if (couponId) {
+            await Coupon.findByIdAndUpdate(couponId, {
+                $addToSet: { usedBy: req.user.userId } // ensures no duplicates
+            });
+        }
+
         // 7️⃣ Update analytics
         await updateAnalytics({ order, incrementSales: true });
 
@@ -147,9 +169,9 @@ exports.verifyAndCreateOrder = async (req, res) => {
         );
 
         const addressBlock = `
-${address.name}
+${address.fullName}
 ${address.street}
-${address.city}, ${address.state} - ${address.postalCode}
+${address.city}, ${address.state} - ${address.pincode}
 Phone: ${address.phone}
 `;
 

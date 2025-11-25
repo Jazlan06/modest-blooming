@@ -11,8 +11,10 @@ import {
     FaFireAlt,
 } from "react-icons/fa";
 import Navbar from "@/components/Navbar";
+import withAdminAuth from '@/utils/withAdminAuth';
 
-export default function AdminDashboard() {
+
+function AdminDashboard() {
     const adminLinks = [
         {
             title: "All Products",
@@ -131,3 +133,4 @@ export default function AdminDashboard() {
         </>
     );
 }
+export default withAdminAuth(AdminDashboard);

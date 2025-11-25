@@ -17,7 +17,7 @@ const formatReadableDate = (date) => {
     return new Intl.DateTimeFormat('en-IN', options).format(date);
 };
 
-const updateAnalytics = async ({ order, incrementSales = false }) => {
+exports.updateAnalytics = async ({ order, incrementSales = false }) => {
     try {
         // Get existing analytics or create new
         let analytics = await Analytics.findOne();
@@ -336,7 +336,7 @@ exports.getAllOrders = async (req, res) => {
             if (dateFrom) query.createdAt.$gte = new Date(dateFrom);
             if (dateTo) {
                 const dt = new Date(dateTo);
-                dt.setHours(23, 59, 59, 999); 
+                dt.setHours(23, 59, 59, 999);
             }
         }
         const skip = (parseInt(page) - 1) * parseInt(limit);

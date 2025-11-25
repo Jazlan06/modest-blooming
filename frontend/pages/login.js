@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '@/components/Navbar';
-
+import Head from 'next/head';
 export default function LoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState('');
@@ -77,6 +77,41 @@ export default function LoginPage() {
 
     return (
         <>
+            <Head>
+                {/* Page Title */}
+                <title>Login | Modest Blooming</title>
+
+                {/* Meta Description */}
+                <meta
+                    name="description"
+                    content="Log in to your Modest Blooming account to manage orders, wishlist, and account settings. Secure login for customers."
+                />
+
+                {/* Robots - Prevent indexing for security */}
+                <meta name="robots" content="noindex, nofollow" />
+
+                {/* Canonical URL */}
+                <link rel="canonical" href="https://www.modestblooming.com/login" />
+
+                {/* Open Graph / Social Media */}
+                <meta property="og:title" content="Login | Modest Blooming" />
+                <meta
+                    property="og:description"
+                    content="Access your Modest Blooming account to view orders, wishlist, and personal settings."
+                />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://www.modestblooming.com/login" />
+                <meta property="og:image" content="https://www.modestblooming.com/logo.png" />
+
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="Login | Modest Blooming" />
+                <meta
+                    name="twitter:description"
+                    content="Access your Modest Blooming account to view orders, wishlist, and personal settings."
+                />
+                <meta name="twitter:image" content="https://www.modestblooming.com/logo.png" />
+            </Head>
             <Navbar />
             <div className="min-h-screen mt-[3rem] bg-gradient-to-b from-[#F4C2C2] via-[#F9E4E4] to-[#FFEDED] flex items-center justify-center px-4">
                 <div className="bg-white shadow-lg rounded-lg max-w-md w-full p-8 space-y-6 animate-fadeIn relative">

@@ -6,13 +6,18 @@ const orderSchema = new mongoose.Schema({
         {
             product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
             quantity: { type: Number, required: true },
-            selectedVariant: { type: String },
+            selectedVariant: {
+                colorName: { type: String },
+                colorCode: { type: String }
+            },
             priceAtPurchase: { type: Number, required: true }
         }
     ],
-    totalAmount: { type: Number, required: true },
+    totalAmount: { type: Number, required: true, min: 0 },
     deliveryCharge: { type: Number, default: 0 },
     address: {
+        name: { type: String, rqeuired: true },
+        phone: { type: String, required: true },
         locality: String,
         city: String,
         state: String,

@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { FaChevronDown, FaSearch } from "react-icons/fa";
 import Navbar from "@/components/Navbar";
-
+import Head from "next/head";
 const FAQPage = () => {
     const [openIndex, setOpenIndex] = useState(null);
     const [search, setSearch] = useState("");
@@ -66,6 +66,37 @@ const FAQPage = () => {
 
     return (
         <>
+            <Head>
+                {/* Basic SEO */}
+                <title>FAQs | Modest Blooming - Orders, Shipping & Products</title>
+                <meta
+                    name="description"
+                    content="Find answers to common questions about Modest Blooming: orders, account, shipping, returns, payments, and product customization."
+                />
+                <link rel="canonical" href="https://www.modestblooming.com/faqs" />
+
+                {/* Open Graph / Facebook */}
+                <meta property="og:title" content="FAQs | Modest Blooming - Orders, Shipping & Products" />
+                <meta
+                    property="og:description"
+                    content="Find answers to common questions about Modest Blooming: orders, account, shipping, returns, payments, and product customization."
+                />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content="https://www.modestblooming.com/faqs" />
+                <meta property="og:image" content="https://www.modestblooming.com/faqs.jpg" />
+
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="FAQs | Modest Blooming - Orders, Shipping & Products" />
+                <meta
+                    name="twitter:description"
+                    content="Find answers to common questions about Modest Blooming: orders, account, shipping, returns, payments, and product customization."
+                />
+                <meta name="twitter:image" content="https://www.modestblooming.com/faqs.jpg" />
+
+                {/* Robots */}
+                <meta name="robots" content="index, follow" />
+            </Head>
             <Navbar />
 
             <div className="relative min-h-screen mt-[4rem] md:mt-[7rem] py-20 px-4 sm:px-6 lg:px-20 overflow-hidden bg-gradient-to-b from-white via-[#fff8f8] to-[#fdeef0]">
@@ -158,8 +189,8 @@ const FAQPage = () => {
                                                             key={id}
                                                             style={{ animationDelay: cardDelay }}
                                                             className={`faq-card opacity-0 translate-y-3 group bg-white/80 backdrop-blur-xl rounded-2xl border transition-all duration-500 overflow-hidden ${isOpen
-                                                                    ? "border-[#F4C2C2]/40 shadow-lg scale-[1.01]"
-                                                                    : "border-transparent hover:border-[#F4C2C2]/30 hover:shadow-md"
+                                                                ? "border-[#F4C2C2]/40 shadow-lg scale-[1.01]"
+                                                                : "border-transparent hover:border-[#F4C2C2]/30 hover:shadow-md"
                                                                 }`}
                                                         >
                                                             <button
@@ -177,8 +208,8 @@ const FAQPage = () => {
 
                                                             <div
                                                                 className={`px-6 text-gray-700 text-base leading-relaxed transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${isOpen
-                                                                        ? "max-h-96 pb-5 opacity-100 translate-y-0"
-                                                                        : "max-h-0 pb-0 opacity-0 -translate-y-2"
+                                                                    ? "max-h-96 pb-5 opacity-100 translate-y-0"
+                                                                    : "max-h-0 pb-0 opacity-0 -translate-y-2"
                                                                     }`}
                                                                 dangerouslySetInnerHTML={{ __html: faq.answer }}
                                                             />

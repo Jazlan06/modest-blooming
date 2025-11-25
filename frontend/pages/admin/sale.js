@@ -3,10 +3,11 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
 import Navbar from "@/components/Navbar";
+import withAdminAuth from '@/utils/withAdminAuth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export default function SaleManagement() {
+function SaleManagement() {
     const [sales, setSales] = useState([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState("");
@@ -273,12 +274,12 @@ export default function SaleManagement() {
                                         {/* Type Badge */}
                                         <span
                                             className={`px-2 py-1 rounded-full text-sm font-semibold font-body ${sale.type === "global"
-                                                    ? "bg-indigo-100 text-indigo-800"
-                                                    : sale.type === "category"
-                                                        ? "bg-green-100 text-green-800"
-                                                        : sale.type === "festival"
-                                                            ? "bg-yellow-100 text-yellow-800"
-                                                            : "bg-pink-100 text-pink-800"
+                                                ? "bg-indigo-100 text-indigo-800"
+                                                : sale.type === "category"
+                                                    ? "bg-green-100 text-green-800"
+                                                    : sale.type === "festival"
+                                                        ? "bg-yellow-100 text-yellow-800"
+                                                        : "bg-pink-100 text-pink-800"
                                                 }`}
                                         >
                                             {sale.type}
@@ -347,3 +348,4 @@ export default function SaleManagement() {
         </div>
     );
 }
+export default withAdminAuth(SaleManagement);

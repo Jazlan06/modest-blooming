@@ -1,10 +1,32 @@
 import { FaLeaf, FaGem, FaShippingFast, FaHeart } from "react-icons/fa";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Head from "next/head";
 
 const AboutPage = () => {
     return (
         <>
+            <Head>
+                <title>About Modest Blooming | Elegance Meets Modesty</title>
+                <meta
+                    name="description"
+                    content="Learn about Modest Blooming – our journey, values, and commitment to sustainable, premium-quality modest fashion for confident women."
+                />
+                <meta name="robots" content="index, follow" />
+
+                {/* Open Graph / Social Sharing */}
+                <meta property="og:title" content="About Modest Blooming | Elegance Meets Modesty" />
+                <meta property="og:description" content="Discover our story, values, and dedication to sustainable, premium-quality modest fashion." />
+                <meta property="og:type" content="website" />
+                <meta property="og:image" content="/about-hero.jpg" />
+                <meta property="og:url" content="https://yourdomain.com/about" />
+
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content="About Modest Blooming | Elegance Meets Modesty" />
+                <meta name="twitter:description" content="Discover our story, values, and dedication to sustainable, premium-quality modest fashion." />
+                <meta name="twitter:image" content="/about-hero.jpg" />
+            </Head>
             <Navbar />
 
             <div className="relative min-h-screen mt-[4rem] md:mt-[7rem] bg-gradient-to-b from-white via-[#fff8f8] to-[#fdeef0] overflow-hidden">

@@ -92,10 +92,24 @@ const getUserCartWishlist = async (req, res) => {
     }
 };
 
+const clearCart = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId);
+
+        user.cart = []; // empty the cart
+        await user.save();
+
+        res.json({ cart: [] }); // return empty cart
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 module.exports = {
     addToCart,
     removeFromCart,
     addToWishlist,
     removeFromWishlist,
-    getUserCartWishlist
+    getUserCartWishlist,
+    clearCart
 };
