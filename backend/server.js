@@ -13,7 +13,7 @@ const server = http.createServer(app);
 const { Server } = require('socket.io');
 const io = new Server(server, {
     cors: {
-        origin: 'https://modest-blooming.vercel.app', 
+        origin: 'https://modest-blooming.vercel.app',
         methods: ['GET', 'POST'],
         credentials: true
     }
@@ -31,7 +31,7 @@ io.on('connection', (socket) => {
 app.locals.io = io;
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: 'https://modest-blooming.vercel.app',
     credentials: true
 }));
 
