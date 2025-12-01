@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
-
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 const registerUser = async (req, res) => {
     const { name, email, password, phone } = req.body;
@@ -33,7 +33,7 @@ const registerUser = async (req, res) => {
         await user.save();
 
         // Send verification email
-        const verifyUrl = `http://localhost:3000/verify-email/${verificationToken}`;
+        const verifyUrl = `${FRONTEND_URL}/verify-email/${verificationToken}`;
         const message = `Please verify your email by clicking on the link: ${verifyUrl}`;
 
         await sendEmail(user.email, 'Email Verification', message);
@@ -86,7 +86,7 @@ const resendVerificationEmail = async (req, res) => {
         user.verificationTokenExpire = verificationTokenExpire;
         await user.save();
 
-        const verifyUrl = `http://localhost:3000/verify-email/${verificationToken}`;
+        const verifyUrl = `${FRONTEND_URL}/verify-email/${verificationToken}`;
         const message = `Please verify your email by clicking this link: ${verifyUrl}`;
 
         console.log('📨 Attempting to send email to', user.email);
@@ -147,7 +147,7 @@ const forgotPassword = async (req, res) => {
     user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 min
     await user.save();
 
-    const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+    const resetUrl = `${FRONTEND_URL}/reset-password/${resetToken}`;
 
     const message = `You requested a password reset.\n\nReset here: ${resetUrl}\n\nIf you didn't request this, ignore.`;
 

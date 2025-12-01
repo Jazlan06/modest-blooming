@@ -1,6 +1,6 @@
 const express = require('express');
 const {
-    placeOrder,
+    // placeOrder,
     updateOrderStatus,
     getMyOrders,
     getAllOrders,
@@ -10,7 +10,7 @@ const { isAuthenticated, isAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 // Place an order
-router.post('/', isAuthenticated, placeOrder);
+// router.post('/', isAuthenticated, placeOrder);
 // Get orders of logged-in user
 router.get('/my', isAuthenticated, getMyOrders);
 // Admin: update status

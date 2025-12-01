@@ -92,102 +92,102 @@ exports.updateAnalytics = async ({ order, incrementSales = false }) => {
     }
 };
 
-exports.placeOrder = async (req, res) => {
-    try {
-        const { products, totalAmount, couponApplied, addressId, isHamper, hamperNote, paymentMethod } = req.body;
+// exports.placeOrder = async (req, res) => {
+//     try {
+//         const { products, totalAmount, couponApplied, addressId, isHamper, hamperNote, paymentMethod } = req.body;
 
-        if (!products || products.length === 0) {
-            return res.status(400).json({ message: 'No products provided' });
-        }
+//         if (!products || products.length === 0) {
+//             return res.status(400).json({ message: 'No products provided' });
+//         }
 
-        const user = await User.findById(req.user.userId);
-        const address = user.addresses.id(addressId);
-        if (!address) {
-            return res.status(400).json({ message: 'Invalid address' });
-        }
+//         const user = await User.findById(req.user.userId);
+//         const address = user.addresses.id(addressId);
+//         if (!address) {
+//             return res.status(400).json({ message: 'Invalid address' });
+//         }
 
-        const populatedCart = await Promise.all(products.map(async (item) => {
-            const product = await Product.findById(item.product);
-            return {
-                product,
-                quantity: item.quantity,
-                selectedVariant: item.selectedVariant
-            };
-        }));
+//         const populatedCart = await Promise.all(products.map(async (item) => {
+//             const product = await Product.findById(item.product);
+//             return {
+//                 product,
+//                 quantity: item.quantity,
+//                 selectedVariant: item.selectedVariant
+//             };
+//         }));
 
-        const formattedCart = populatedCart.map(item => ({
-            product: item.product,
-            selectedVariant: item.selectedVariant,
-            quantity: item.quantity
-        }));
+//         const formattedCart = populatedCart.map(item => ({
+//             product: item.product,
+//             selectedVariant: item.selectedVariant,
+//             quantity: item.quantity
+//         }));
 
-        const { deliveryCharge, ratePerKg, totalWeight } = await calculateDeliveryCharge({
-            cartItems: formattedCart,
-            address,
-            isHamper
-        });
+//         const { deliveryCharge, ratePerKg, totalWeight } = await calculateDeliveryCharge({
+//             cartItems: formattedCart,
+//             address,
+//             isHamper
+//         });
 
-        const finalAmount = totalAmount + deliveryCharge;
+//         const finalAmount = totalAmount + deliveryCharge;
 
-        const orderProducts = products.map(item => ({
-            product: item.product,
-            quantity: item.quantity,
-            selectedVariant: item.selectedVariant,
-            priceAtPurchase: item.priceAtPurchase
-        }));
+//         const orderProducts = products.map(item => ({
+//             product: item.product,
+//             quantity: item.quantity,
+//             selectedVariant: item.selectedVariant,
+//             priceAtPurchase: item.priceAtPurchase
+//         }));
 
-        let couponId = null;
-        if (couponApplied) {
-            if (/^[0-9a-fA-F]{24}$/.test(couponApplied)) {
-                couponId = couponApplied;
-            } else {
-                const foundCoupon = await Coupon.findOne({ code: couponApplied.toUpperCase() });
-                if (foundCoupon) couponId = foundCoupon._id;
-            }
-        }
+//         let couponId = null;
+//         if (couponApplied) {
+//             if (/^[0-9a-fA-F]{24}$/.test(couponApplied)) {
+//                 couponId = couponApplied;
+//             } else {
+//                 const foundCoupon = await Coupon.findOne({ code: couponApplied.toUpperCase() });
+//                 if (foundCoupon) couponId = foundCoupon._id;
+//             }
+//         }
 
-        // ===== Create order with status 'pending' =====
-        const order = await Order.create({
-            user: req.user.userId,
-            products: orderProducts,
-            totalAmount: finalAmount,
-            deliveryCharge,
-            address,
-            isHamper,
-            hamperNote,
-            couponApplied: couponId,
-            status: 'pending', // payment not done yet
-            paymentInfo: {
-                method: paymentMethod,
-                fees: 0 // will calculate after Razorpay order is created
-            }
-        });
+//         // ===== Create order with status 'pending' =====
+//         const order = await Order.create({
+//             user: req.user.userId,
+//             products: orderProducts,
+//             totalAmount: finalAmount,
+//             deliveryCharge,
+//             address,
+//             isHamper,
+//             hamperNote,
+//             couponApplied: couponId,
+//             status: 'pending', // payment not done yet
+//             paymentInfo: {
+//                 method: paymentMethod,
+//                 fees: 0 // will calculate after Razorpay order is created
+//             }
+//         });
 
-        // ===== Emit Socket.io event =====
-        const io = req.app.locals.io;
-        io.emit('newOrder', {
-            orderId: order._id,
-            user: req.user.userId,
-            totalAmount: finalAmount,
-            deliveryCharge,
-            totalWeight,
-            createdAt: order.createdAt
-        });
+//         // ===== Emit Socket.io event =====
+//         const io = req.app.locals.io;
+//         io.emit('newOrder', {
+//             orderId: order._id,
+//             user: req.user.userId,
+//             totalAmount: finalAmount,
+//             deliveryCharge,
+//             totalWeight,
+//             createdAt: order.createdAt
+//         });
 
-        // ===== Update analytics =====
-        // await updateAnalytics({ order, isNewOrder: true });
+//         // ===== Update analytics =====
+//         // await updateAnalytics({ order, isNewOrder: true });
 
-        // ===== Return order so frontend can initiate Razorpay payment =====
-        res.status(201).json({
-            message: 'Order created successfully. Proceed to payment.',
-            order
-        });
+//         // ===== Return order so frontend can initiate Razorpay payment =====
+//         res.status(201).json({
+//             message: 'Order created successfully. Proceed to payment.',
+//             order
+//         });
 
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
-    }
-};
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ message: 'Server error' });
+//     }
+// };
 
 exports.updateOrderStatus = async (req, res) => {
     try {

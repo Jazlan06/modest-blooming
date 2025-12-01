@@ -37,6 +37,11 @@ app.use(cors({
 
 app.use(express.json());
 
+app.get('/health', (req, res) => {
+    console.log('💓 /health ping received at', new Date().toISOString());
+    res.status(200).json({ status: 'OK', time: new Date().toISOString() });
+});
+
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('✅ MongoDB connected successfully'))
     .catch((err) => console.error('❌ MongoDB connection error:', err));
