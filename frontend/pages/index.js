@@ -219,7 +219,7 @@ export default function HomePage({ content }) {
 
                                     {banner.buttonText && (
                                         <Link href={banner.buttonLink || '#'}>
-                                            <span className="inline-block w-fit bg-white text-black text-sm sm:text-base px-3 py-2 sm:px-5 rounded transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg cursor-pointer font-display">
+                                            <span className="inline-block w-fit bg-black text-sm sm:text-base px-3 py-2 sm:px-5 rounded transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg cursor-pointer font-display">
                                                 {banner.buttonText}
                                             </span>
                                         </Link>
@@ -234,7 +234,7 @@ export default function HomePage({ content }) {
                                 <button
                                     key={idx}
                                     onClick={() => setCurrentSlide(idx)}
-                                    className={`w-3 h-3 rounded-full ${idx === currentSlide ? 'bg-white' : 'bg-gray-400'
+                                    className={`w-3 h-3 rounded-full ${idx === currentSlide ? 'bg-black' : 'bg-gray-400'
                                         } transition`}
                                     aria-label={`Go to slide ${idx + 1}`}
                                 />
@@ -279,7 +279,7 @@ export default function HomePage({ content }) {
 
                                     {bestSellerBanner.buttonText && (
                                         <Link href={bestSellerBanner.buttonLink || '#'}>
-                                            <span className="inline-block w-fit bg-white text-black text-sm sm:text-base px-3 py-2 sm:px-5 rounded transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg cursor-pointer font-display">
+                                            <span className="inline-block w-fit bg-black text-sm sm:text-base px-3 py-2 sm:px-5 rounded transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg cursor-pointer font-display">
                                                 {bestSellerBanner.buttonText}
                                             </span>
                                         </Link>
@@ -328,7 +328,7 @@ export default function HomePage({ content }) {
 
                                     {saleBanner.buttonText && (
                                         <Link href={saleBanner.buttonLink || '#'}>
-                                            <span className="inline-block w-fit bg-white text-black text-sm sm:text-base px-3 py-2 sm:px-5 rounded transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg cursor-pointer font-display">
+                                            <span className="inline-block w-fit bg-black text-sm sm:text-base px-3 py-2 sm:px-5 rounded transition-all duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg cursor-pointer font-display">
                                                 {saleBanner.buttonText}
                                             </span>
                                         </Link>

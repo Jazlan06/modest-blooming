@@ -14,12 +14,12 @@ const RecommendedProducts = ({ category, currentProductId }) => {
 
     const fetchRecommended = async () => {
         try {
-            let res = await axios.get(`http://localhost:5000/api/products?category=${category}`);
+            let res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/products?category=${category}`);
             let related = res.data.products?.filter(p => p._id !== currentProductId) || [];
 
             // If only 0 or 1 in category → fetch random products
             if (related.length <= 1) {
-                const randomRes = await axios.get(`http://localhost:5000/api/products?limit=8`);
+                const randomRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/products?limit=8`);
                 related = randomRes.data.products.filter(p => p._id !== currentProductId);
             }
 
@@ -142,8 +142,8 @@ const RecommendedProducts = ({ category, currentProductId }) => {
                                             >
                                                 <FaRegHeart
                                                     className={`text-xl transition-all duration-300 ${isWishlisted
-                                                            ? "text-pink-400 scale-110"
-                                                            : "text-gray-400 hover:text-pink-300"
+                                                        ? "text-pink-400 scale-110"
+                                                        : "text-gray-400 hover:text-pink-300"
                                                         }`}
                                                 />
                                             </button>

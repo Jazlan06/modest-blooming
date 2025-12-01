@@ -11,7 +11,7 @@ export const CartProvider = ({ children }) => {
         if (!token) return;
 
         try {
-            const res = await fetch('http://localhost:5000/api/user/my', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/my`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -36,7 +36,7 @@ export const CartProvider = ({ children }) => {
         }
 
         try {
-            const res = await fetch(`http://localhost:5000/api/user/cart/${productId}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/cart/${productId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ export const CartProvider = ({ children }) => {
         if (!token) return;
 
         try {
-            const res = await fetch(`http://localhost:5000/api/user/cart/${productId}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/cart/${productId}`, {
                 method: 'DELETE',
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -85,7 +85,7 @@ export const CartProvider = ({ children }) => {
         if (!token) return;
 
         try {
-            const res = await fetch(`http://localhost:5000/api/user/cart/${productId}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/cart/${productId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -110,7 +110,7 @@ export const CartProvider = ({ children }) => {
         if (!token) return;
 
         try {
-            const res = await fetch('http://localhost:5000/api/user/cart/clear', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/cart/clear`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
             });

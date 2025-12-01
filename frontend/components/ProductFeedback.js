@@ -54,7 +54,7 @@ const ProductFeedback = ({ productId, userId }) => {
 
     const fetchStats = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/feedback/stats/product/${productId}`);
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/feedback/stats/product/${productId}`);
             setStats(res.data);
         } catch (err) {
             console.error(err);
@@ -63,7 +63,7 @@ const ProductFeedback = ({ productId, userId }) => {
 
     const fetchFeedbacks = async () => {
         try {
-            const res = await axios.get(`http://localhost:5000/api/feedback/product/${productId}`);
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/feedback/product/${productId}`);
             setFeedbacks(res.data);
             // Check if current user has already reviewed
             const alreadyReviewed = res.data.some(fb => fb.user._id === userId);
@@ -87,15 +87,21 @@ const ProductFeedback = ({ productId, userId }) => {
 
         const formData = new FormData();
         formData.append('productId', productId);
-        formData.append('orderId', ''); // backend will validate
+        const completedOrderId = await fetchCompletedOrderIdForProduct(productId);
+        if (!completedOrderId) {
+            return toast.error('You cannot review this product because you have no completed order.');
+        }
+        formData.append('orderId', completedOrderId);
         formData.append('message', message);
         formData.append('rating', rating);
         mediaFiles.forEach(file => formData.append('media', file));
 
         try {
+            const token = localStorage.getItem("token");
             setSubmitting(true);
-            const res = await axios.post('http://localhost:5000/api/feedback', formData, {
+            const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/feedback`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
+                'Authorization': `Bearer ${token}`
             });
 
             if (res.data.success) {
@@ -131,6 +137,30 @@ const ProductFeedback = ({ productId, userId }) => {
             }
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const fetchCompletedOrderIdForProduct = async (productId) => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return null;
+
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/orders/completed`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const completedOrders = res.data; // array of orders
+            if (!Array.isArray(completedOrders)) return null;
+
+            // Find the first order that has this product
+            const order = completedOrders.find(o =>
+                o.products.some(p => p.product._id === productId)
+            );
+
+            return order?._id || null;
+        } catch (err) {
+            console.error('Failed to fetch completed orders:', err);
+            return null;
         }
     };
 

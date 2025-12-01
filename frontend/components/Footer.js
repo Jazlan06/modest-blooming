@@ -49,8 +49,8 @@ const Footer = () => {
             title: "Follow Us",
             links: [
                 { icon: <FaInstagram />, href: "https://instagram.com/modest.blooming" },
-                { icon: <FaWhatsapp />, href: "https://wa.me/7506799689" },
-                { icon: <FaFacebook />, href: "https://facebook.com" },
+                { icon: <FaWhatsapp />, href: "https://wa.me/7021936869" },
+                { icon: <FaFacebook />, href: "https://www.facebook.com/share/19x4tNZkyA/" },
             ],
         },
     ];

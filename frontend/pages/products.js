@@ -22,8 +22,8 @@ export default function ProductsPage({ initialData, filterOptions }) {
 
                 // Use filter endpoint if any filter query exists
                 const url = params.has('category') || params.has('tags') || params.has('colors') || params.has('minPrice') || params.has('maxPrice')
-                    ? `http://localhost:5000/api/products/filter?${params}`
-                    : `http://localhost:5000/api/products?${params}`;
+                    ? `${process.env.NEXT_PUBLIC_API_URL}/api/products/filter?${params}`
+                    : `${process.env.NEXT_PUBLIC_API_URL}/api/products?${params}`;
 
                 const response = await fetch(url);
                 const data = await response.json();
@@ -131,10 +131,10 @@ export default function ProductsPage({ initialData, filterOptions }) {
 // Server-Side Rendering
 export async function getServerSideProps() {
     try {
-        const res = await fetch('http://localhost:5000/api/products?page=1&limit=20');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products?page=1&limit=20`);
         const data = await res.json();
 
-        const filterRes = await fetch('http://localhost:5000/api/products/filter-options');
+        const filterRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/filter-options`);
         const filterData = await filterRes.json();
 
         return {

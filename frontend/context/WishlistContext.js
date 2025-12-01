@@ -10,7 +10,7 @@ export const WishlistProvider = ({ children }) => {
         if (!token) return;
 
         try {
-            const res = await fetch('http://localhost:5000/api/user/my', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/my`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -42,7 +42,7 @@ export const WishlistProvider = ({ children }) => {
 
         const isInWishlist = wishlist.some(p => p._id === productId);
         const method = isInWishlist ? 'DELETE' : 'POST';
-        const url = `http://localhost:5000/api/user/wishlist/${productId}`;
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/api/user/wishlist/${productId}`;
 
         try {
             await fetch(url, {

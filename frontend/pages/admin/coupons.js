@@ -39,7 +39,7 @@ function CouponManager() {
                 status: filter,
             }).toString();
 
-            const res = await fetch(`http://localhost:5000/api/coupons?${query}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/coupons?${query}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -82,8 +82,8 @@ function CouponManager() {
         if (!token) return toast.error('Unauthorized');
 
         const url = editing
-            ? `http://localhost:5000/api/coupons/${editing._id}`
-            : 'http://localhost:5000/api/coupons';
+            ? `${process.env.NEXT_PUBLIC_API_URL}/api/coupons/${editing._id}`
+            : `${process.env.NEXT_PUBLIC_API_URL}/api/coupons`;
         const method = editing ? 'PUT' : 'POST';
 
         try {
@@ -120,7 +120,7 @@ function CouponManager() {
             const token = localStorage.getItem('token');
             if (!token) return toast.error('Unauthorized');
 
-            const res = await fetch(`http://localhost:5000/api/coupons/${id}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/coupons/${id}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
             });

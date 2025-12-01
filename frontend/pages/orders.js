@@ -24,7 +24,7 @@ export default function OrdersPage() {
 
             try {
                 const { data } = await axios.get(
-                    'http://localhost:5000/api/orders/my',
+                    `${process.env.NEXT_PUBLIC_API_URL}/api/orders/my`,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 setOrders(data);

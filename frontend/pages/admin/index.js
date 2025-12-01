@@ -1,14 +1,13 @@
 import Link from "next/link";
 import {
     FaBoxOpen,
-    FaPalette,
-    FaEdit,
     FaPlusCircle,
     FaTruck,
     FaHome,
     FaClipboardList,
     FaPercentage,
     FaFireAlt,
+    FaStar
 } from "react-icons/fa";
 import Navbar from "@/components/Navbar";
 import withAdminAuth from '@/utils/withAdminAuth';
@@ -50,6 +49,13 @@ function AdminDashboard() {
             href: "/admin/orders",
             icon: <FaClipboardList />,
             color: "from-indigo-400 to-blue-500",
+        },
+        {
+            title: "Feedback",
+            description: "View, analyze & manage product feedback",
+            href: "/admin/feedback",
+            icon: <FaStar />,
+            color: "from-yellow-400 to-amber-500",
         },
         {
             title: "Coupons",

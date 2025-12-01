@@ -67,7 +67,7 @@ const ContactPage = () => {
                             Your voice matters — whether it’s about our hijabs, abayas, or accessories, we’re here to listen.
                         </p>
                         <a
-                            href="https://wa.me/917506799689?text=Hi%2C%20I%27d%20like%20to%20know%20more%20about%20your%20products!"
+                            href="https://wa.me/917021936869?text=Hi%2C%20I%27d%20like%20to%20know%20more%20about%20your%20products!"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-3 bg-[#25D366] text-white text-lg px-6 py-3 rounded-full shadow-lg hover:shadow-[#25D366]/40 hover:scale-105 transition-all duration-300"
@@ -124,8 +124,8 @@ const ContactPage = () => {
                             </div>
                             <div>
                                 <h3 className="text-2xl font-semibold mb-2">Phone</h3>
-                                <a href="tel:+917506799689" className="text-gray-700 hover:text-[#F4C2C2] transition-colors duration-300">
-                                    +91 75067 99689
+                                <a href="tel:+917021936869" className="text-gray-700 hover:text-[#F4C2C2] transition-colors duration-300">
+                                    +91 70219 36869
                                 </a>
                             </div>
                         </div>
@@ -171,7 +171,7 @@ const ContactPage = () => {
                     <div className="flex justify-center items-center gap-8 text-[#F4C2C2] text-3xl">
                         <a href="https://instagram.com/modest.blooming" aria-label="Instagram" className="hover:scale-110 hover:text-[#e1306c] transition-all duration-300"><FaInstagram /></a>
                         <a href="https://wa.me/917506799689" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="hover:scale-110 hover:text-[#25D366] transition-all duration-300"><FaWhatsapp /></a>
-                        <a href="https://facebook.com" aria-label="Facebook" className="hover:scale-110 hover:text-[#4267B2] transition-all duration-300"><FaFacebookF /></a>
+                        <a href="https://www.facebook.com/share/19x4tNZkyA/" aria-label="Facebook" className="hover:scale-110 hover:text-[#4267B2] transition-all duration-300"><FaFacebookF /></a>
                     </div>
                 </section>
 

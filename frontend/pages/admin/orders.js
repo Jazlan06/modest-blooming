@@ -19,6 +19,7 @@ function OrderManagementPage() {
     const [updatingId, setUpdatingId] = useState(null);
     const [statusUpdate, setStatusUpdate] = useState({});
     const [expandedId, setExpandedId] = useState(null);
+    const [mounted, setMounted] = useState(false);
     const [filters, setFilters] = useState({
         status: "",
         customer: "",
@@ -80,6 +81,10 @@ function OrderManagementPage() {
             fetchOrders(currentPage);
         }
     }, [currentPage]);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const handleStatusUpdate = async (orderId) => {
         if (!statusUpdate[orderId]) return toast.error("Select a status first");
@@ -177,138 +182,148 @@ function OrderManagementPage() {
 
                     {/* Orders List */}
                     <div className="space-y-6">
-                        <AnimatePresence>
-                            {loading ? (
-                                <motion.div
-                                    key="loading"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="text-center py-10 text-gray-500"
-                                >
-                                    Loading orders...
-                                </motion.div>
-                            ) : orders.length === 0 ? (
-                                <motion.div
-                                    key="empty"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="text-center py-10 text-gray-400"
-                                >
-                                    No orders found
-                                </motion.div>
-                            ) : (
-                                orders.map((order) => {
-                                    const isExpanded = expandedId === order._id;
-                                    return (
-                                        <motion.div
-                                            key={order._id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, x: -50 }}
-                                            transition={{ duration: 0.3 }}
-                                            className="bg-white rounded-xl shadow-md p-6 cursor-pointer hover:shadow-xl transition"
-                                        >
-                                            {/* Header */}
-                                            <div
-                                                className="flex flex-col md:flex-row justify-between items-start md:items-center"
-                                                onClick={() => setExpandedId(isExpanded ? null : order._id)}
+                        {mounted && (
+                            <AnimatePresence>
+                                {loading ? (
+                                    <motion.div
+                                        key="loading"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className="text-center py-10 text-gray-500"
+                                    >
+                                        Loading orders...
+                                    </motion.div>
+                                ) : orders.length === 0 ? (
+                                    <motion.div
+                                        key="empty"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className="text-center py-10 text-gray-400"
+                                    >
+                                        No orders found
+                                    </motion.div>
+                                ) : (
+                                    orders.map((order) => {
+                                        const isExpanded = expandedId === order._id;
+                                        return (
+                                            <motion.div
+                                                key={order._id}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, x: -50 }}
+                                                transition={{ duration: 0.3 }}
+                                                className="bg-white rounded-xl shadow-md p-6 cursor-pointer hover:shadow-xl transition"
                                             >
-                                                <div className="flex-1 space-y-2">
-                                                    <p className="text-lg font-semibold text-gray-800">
-                                                        Order ID: {order._id.slice(-6).toUpperCase()}
-                                                    </p>
-                                                    <p className="text-gray-600">
-                                                        Customer: {order.user?.name || "Unknown"} ({order.user?.email || "Unknown"})
-                                                    </p>
-                                                    <p className="text-gray-600">
-                                                        Total: ₹{order.totalAmount.toFixed(2)} | Delivery: ₹{order.deliveryCharge?.toFixed(2) || 0}
-                                                    </p>
-                                                    <span
-                                                        className={`px-2 py-1 rounded-full text-sm font-semibold ${statusColors[order.status]}`}
-                                                    >
-                                                        {order.status.toUpperCase()}
-                                                    </span>
+                                                {/* Header */}
+                                                <div
+                                                    className="flex flex-col md:flex-row justify-between items-start md:items-center"
+                                                    onClick={() => setExpandedId(isExpanded ? null : order._id)}
+                                                >
+                                                    <div className="flex-1 space-y-2">
+                                                        <p className="text-lg font-semibold text-gray-800">
+                                                            Order ID: {order._id.slice(-6).toUpperCase()}
+                                                        </p>
+                                                        <p className="text-gray-600">
+                                                            Customer: {order.user?.name || "Unknown"} ({order.user?.email || "Unknown"})
+                                                        </p>
+                                                        <p className="text-gray-600">
+                                                            Total: ₹{order.totalAmount.toFixed(2)} | Delivery: ₹{order.deliveryCharge?.toFixed(2) || 0}
+                                                        </p>
+                                                        <span
+                                                            className={`px-2 py-1 rounded-full text-sm font-semibold ${statusColors[order.status]}`}
+                                                        >
+                                                            {order.status.toUpperCase()}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="mt-4 md:mt-0 flex flex-col md:flex-row items-start md:items-center gap-3">
+                                                        <select
+                                                            value={statusUpdate[order._id] || ""}
+                                                            onChange={(e) =>
+                                                                setStatusUpdate((prev) => ({ ...prev, [order._id]: e.target.value }))
+                                                            }
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                                                        >
+                                                            <option value="">Change status...</option>
+                                                            <option value="pending">Pending</option>
+                                                            <option value="shipped">Shipped</option>
+                                                            <option value="completed">Completed</option>
+                                                            <option value="cancelled">Cancelled</option>
+                                                        </select>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleStatusUpdate(order._id);
+                                                            }}
+                                                            disabled={updatingId === order._id}
+                                                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition shadow-md hover:shadow-xl disabled:opacity-50"
+                                                        >
+                                                            {updatingId === order._id ? "Updating..." : "Update"}
+                                                        </button>
+                                                    </div>
                                                 </div>
 
-                                                <div className="mt-4 md:mt-0 flex flex-col md:flex-row items-start md:items-center gap-3">
-                                                    <select
-                                                        value={statusUpdate[order._id] || ""}
-                                                        onChange={(e) =>
-                                                            setStatusUpdate((prev) => ({ ...prev, [order._id]: e.target.value }))
-                                                        }
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-                                                    >
-                                                        <option value="">Change status...</option>
-                                                        <option value="pending">Pending</option>
-                                                        <option value="shipped">Shipped</option>
-                                                        <option value="completed">Completed</option>
-                                                        <option value="cancelled">Cancelled</option>
-                                                    </select>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleStatusUpdate(order._id);
-                                                        }}
-                                                        disabled={updatingId === order._id}
-                                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition shadow-md hover:shadow-xl disabled:opacity-50"
-                                                    >
-                                                        {updatingId === order._id ? "Updating..." : "Update"}
-                                                    </button>
-                                                </div>
-                                            </div>
+                                                {/* Expandable details */}
+                                                <AnimatePresence>
+                                                    {isExpanded && (
+                                                        <motion.div
+                                                            key="details"
+                                                            initial={{ opacity: 0, height: 0 }}
+                                                            animate={{ opacity: 1, height: "auto" }}
+                                                            exit={{ opacity: 0, height: 0 }}
+                                                            transition={{ duration: 0.3 }}
+                                                            className="mt-4 border-t border-gray-200 pt-4 space-y-2 text-gray-700"
+                                                        >
+                                                            <div>
+                                                                <h3 className="font-semibold mb-1">Products:</h3>
+                                                                {order.products.map((p, i) => (
+                                                                    <div key={i} className="flex justify-between py-1">
+                                                                        <span>
+                                                                            {p.product?.name || "Product"} x {p.quantity} ({
+                                                                                p.selectedVariant
+                                                                                    ? p.selectedVariant.colorName ||
+                                                                                    p.selectedVariant.color?.name ||
+                                                                                    p.selectedVariant.name ||
+                                                                                    "Default"
+                                                                                    : "Default"
+                                                                            })
 
-                                            {/* Expandable details */}
-                                            <AnimatePresence>
-                                                {isExpanded && (
-                                                    <motion.div
-                                                        key="details"
-                                                        initial={{ opacity: 0, height: 0 }}
-                                                        animate={{ opacity: 1, height: "auto" }}
-                                                        exit={{ opacity: 0, height: 0 }}
-                                                        transition={{ duration: 0.3 }}
-                                                        className="mt-4 border-t border-gray-200 pt-4 space-y-2 text-gray-700"
-                                                    >
-                                                        <div>
-                                                            <h3 className="font-semibold mb-1">Products:</h3>
-                                                            {order.products.map((p, i) => (
-                                                                <div key={i} className="flex justify-between py-1">
-                                                                    <span>
-                                                                        {p.product?.name || "Product"} x {p.quantity} ({p.selectedVariant || "Default"})
-                                                                    </span>
-                                                                    <span>₹{p.priceAtPurchase ? p.priceAtPurchase.toFixed(2) : 0}</span>
-                                                                </div>
-                                                            ))}
-                                                        </div>
+                                                                        </span>
+                                                                        <span>₹{p.priceAtPurchase ? p.priceAtPurchase.toFixed(2) : 0}</span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
 
-                                                        <div>
-                                                            <h3 className="font-semibold mb-1">Shipping Address:</h3>
-                                                            <p>
-                                                                {order.address?.street || ""}, {order.address?.apartment || ""}, {order.address?.locality || ""}, {order.address?.city}, {order.address?.state} - {order.address?.pincode}
-                                                            </p>
-                                                        </div>
+                                                            <div>
+                                                                <h3 className="font-semibold mb-1">Shipping Address:</h3>
+                                                                <p>
+                                                                    {order.address?.street || ""}, {order.address?.apartment || ""}, {order.address?.locality || ""}, {order.address?.city}, {order.address?.state} - {order.address?.pincode}
+                                                                </p>
+                                                            </div>
 
-                                                        <div>
-                                                            <h3 className="font-semibold mb-1">Payment Info:</h3>
-                                                            <p>Payment ID: {order.paymentInfo?.paymentId || "-"}</p>
-                                                            <p>Order ID: {order.paymentInfo?.orderId || "-"}</p>
-                                                        </div>
+                                                            <div>
+                                                                <h3 className="font-semibold mb-1">Payment Info:</h3>
+                                                                <p>Payment ID: {order.paymentInfo?.paymentId || "-"}</p>
+                                                                <p>Order ID: {order.paymentInfo?.orderId || "-"}</p>
+                                                            </div>
 
-                                                        <div>
-                                                            <h3 className="font-semibold mb-1">Timestamps:</h3>
-                                                            <p>Created At: {new Date(order.createdAt).toLocaleString()}</p>
-                                                            <p>Last Updated: {new Date(order.updatedAt).toLocaleString()}</p>
-                                                        </div>
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
-                                        </motion.div>
-                                    );
-                                })
-                            )}
-                        </AnimatePresence>
+                                                            <div>
+                                                                <h3 className="font-semibold mb-1">Timestamps:</h3>
+                                                                <p>Created At: {new Date(order.createdAt).toLocaleString()}</p>
+                                                                <p>Last Updated: {new Date(order.updatedAt).toLocaleString()}</p>
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </motion.div>
+                                        );
+                                    })
+                                )}
+                            </AnimatePresence>
+                        )}
                     </div>
 
                     {/* Pagination Controls */}

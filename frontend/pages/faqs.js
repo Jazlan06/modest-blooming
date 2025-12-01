@@ -13,7 +13,7 @@ const FAQPage = () => {
                 { question: "How to create an account?", answer: "Click <a href='/login' class='text-[#F4C2C2] underline'>here</a> to register." },
                 { question: "How do I verify my email?", answer: "After registering, click the verification link sent to your email." },
                 { question: "Can I cancel my order?", answer: "Orders can be canceled before dispatch by contacting support." },
-                { question: "How to track my order?", answer: "Tracking details are sent via email/WhatsApp after dispatch." },
+                { question: "How to track my order?", answer: "Tracking details are sent via email after dispatch." },
             ],
         },
         {
@@ -27,7 +27,7 @@ const FAQPage = () => {
         {
             category: "Payments & Delivery",
             faqs: [
-                { question: "What payment methods do you accept?", answer: "UPI only. We do not offer COD." },
+                { question: "What payment methods do you accept?", answer: "UPI/Cards/NetBanking only. We do not offer COD." },
                 { question: "Delivery duration?", answer: "Delivery times depend on location, usually 3–7 days." },
                 { question: "Do you ship outside Mumbai?", answer: "Yes, across India. Delivery charges vary by location." },
             ],
@@ -35,9 +35,9 @@ const FAQPage = () => {
         {
             category: "Returns & Policies",
             faqs: [
-                { question: "Return policy?", answer: "We currently do not accept returns." },
+                { question: "Return policy?", answer: "We currently do not accept return unless any fault from our side." },
                 { question: "Dispatch video for faulty items?", answer: "Yes, we record items while dispatching to ensure accountability." },
-                { question: "What if item is damaged?", answer: "Report immediately. We'll resolve or replace it." },
+                { question: "What if item is damaged?", answer: "Record Video while dispatching parcel. If wrong/damaged item - Report Immediately" },
             ],
         },
         {
@@ -73,7 +73,7 @@ const FAQPage = () => {
                     name="description"
                     content="Find answers to common questions about Modest Blooming: orders, account, shipping, returns, payments, and product customization."
                 />
-                <link rel="canonical" href="https://www.modestblooming.com/faqs" />
+                <link rel="canonical" href="https://www.modestblooming.in/faqs" />
 
                 {/* Open Graph / Facebook */}
                 <meta property="og:title" content="FAQs | Modest Blooming - Orders, Shipping & Products" />
@@ -82,8 +82,8 @@ const FAQPage = () => {
                     content="Find answers to common questions about Modest Blooming: orders, account, shipping, returns, payments, and product customization."
                 />
                 <meta property="og:type" content="website" />
-                <meta property="og:url" content="https://www.modestblooming.com/faqs" />
-                <meta property="og:image" content="https://www.modestblooming.com/faqs.jpg" />
+                <meta property="og:url" content="https://www.modestblooming.in/faqs" />
+                <meta property="og:image" content="https://www.modestblooming.in/faqs.jpg" />
 
                 {/* Twitter Card */}
                 <meta name="twitter:card" content="summary_large_image" />
@@ -92,7 +92,7 @@ const FAQPage = () => {
                     name="twitter:description"
                     content="Find answers to common questions about Modest Blooming: orders, account, shipping, returns, payments, and product customization."
                 />
-                <meta name="twitter:image" content="https://www.modestblooming.com/faqs.jpg" />
+                <meta name="twitter:image" content="https://www.modestblooming.in/faqs.jpg" />
 
                 {/* Robots */}
                 <meta name="robots" content="index, follow" />

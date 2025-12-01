@@ -22,7 +22,7 @@ export default function ProductPage({ product }) {
 export async function getServerSideProps(context) {
     const { slug } = context.params;
 
-    const res = await fetch(`http://localhost:5000/api/products/slug/${slug}`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/slug/${slug}`);
     if (!res.ok) {
         return { notFound: true };
     }

@@ -51,7 +51,7 @@ export default function PaymentPage() {
                 return;
             }
 
-            const res = await fetch("http://localhost:5000/api/payments/create-temp", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/create-temp`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -77,7 +77,7 @@ export default function PaymentPage() {
                 order_id: data.rzpOrderId,
                 handler: async function (response) {
                     try {
-                        const verifyRes = await fetch("http://localhost:5000/api/payments/verify", {
+                        const verifyRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/verify`, {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",

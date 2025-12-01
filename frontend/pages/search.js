@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import ProductCard from '@/components/ProductCard'; // Assuming you have a ProductCard component
 import { FaSpinner } from 'react-icons/fa';
-
+import Head from 'next/head';
 export default function Search() {
     const router = useRouter();
     const { q } = router.query; // Get the query parameter from the URL

@@ -47,7 +47,7 @@ export default function Navbar() {
         if (token) {
             const fetchWishlistCount = async () => {
                 try {
-                    const res = await fetch('http://localhost:5000/api/user/my', {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/my`, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                         },

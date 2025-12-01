@@ -8,7 +8,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import RecommendedProducts from "@/components/RecommendedProducts";
 import Stepper from "@/components/Stepper";
-
+import Head from "next/head";
 export default function CartPage() {
     const router = useRouter();
     const { cart, addToCart, removeFromCart, fetchCart, updateCartQuantity } = useCart();
@@ -69,7 +69,7 @@ export default function CartPage() {
                     return;
                 }
 
-                const res = await axios.get('http://localhost:5000/api/address', {
+                const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/address`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -98,7 +98,7 @@ export default function CartPage() {
         setCouponMessage("");
 
         try {
-            const res = await fetch("http://localhost:5000/api/coupons/apply", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/coupons/apply`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -146,7 +146,7 @@ export default function CartPage() {
         try {
             if (!userAddress || cart.length === 0) return;
 
-            const res = await fetch("http://localhost:5000/api/delivery/calculate", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/delivery/calculate`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

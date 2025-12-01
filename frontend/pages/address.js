@@ -29,7 +29,7 @@ export default function AddressPage() {
         if (!token) return;
         setLoading(true);
         try {
-            const res = await axios.get('http://localhost:5000/api/address', {
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/address`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setAddresses(res.data || []);
@@ -59,7 +59,7 @@ export default function AddressPage() {
         if (!token) return alert("Please login to add address");
 
         try {
-            await axios.post('http://localhost:5000/api/address', newAddress, {
+            await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/address`, newAddress, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setNewAddress({
@@ -88,7 +88,7 @@ export default function AddressPage() {
         if (!confirm("Are you sure you want to delete this address?")) return;
 
         try {
-            await axios.delete(`http://localhost:5000/api/address/${id}`, {
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/address/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchAddresses();
@@ -102,7 +102,7 @@ export default function AddressPage() {
         if (!token) return alert("Please login to set default address");
 
         try {
-            await axios.put(`http://localhost:5000/api/address/${id}/default`, {}, {
+            await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/address/${id}/default`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchAddresses();

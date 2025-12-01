@@ -39,8 +39,8 @@ export default function SalePage({ initialProducts, filterOptions }) {
                         params.has('colors') ||
                         params.has('minPrice') ||
                         params.has('maxPrice')
-                        ? `http://localhost:5000/api/products/filter?${params}`
-                        : `http://localhost:5000/api/products?${params}`;
+                        ? `${process.env.NEXT_PUBLIC_API_URL}/api/products/filter?${params}`
+                        : `${process.env.NEXT_PUBLIC_API_URL}/api/products?${params}`;
 
                 const res = await fetch(url);
                 const data = await res.json();
@@ -154,11 +154,11 @@ export default function SalePage({ initialProducts, filterOptions }) {
 export async function getServerSideProps() {
     try {
         // Fetch sale products
-        const res = await fetch('http://localhost:5000/api/products?sale=true&page=1&limit=20');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products?sale=true&page=1&limit=20`);
         const data = await res.json();
 
         // Fetch filter options for sale products
-        const filterRes = await fetch('http://localhost:5000/api/products/filter-options?sale=true');
+        const filterRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/filter-options?sale=true`);
         const filterData = await filterRes.json();
 
         return {
