@@ -78,6 +78,6 @@ app.use('/api/admin/delivery-rates', deliveryRateRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/payments', paymentRoutes);
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
