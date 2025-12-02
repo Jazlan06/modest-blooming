@@ -2,33 +2,33 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const http = require('http');
+// const http = require('http');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Create HTTP server for socket.io
-const server = http.createServer(app);
+// // Create HTTP server for socket.io
+// const server = http.createServer(app);
 
-// ===== Socket.io setup =====
-const { Server } = require('socket.io');
-const io = new Server(server, {
-    cors: {
-        origin: 'https://modest-blooming.vercel.app',
-        methods: ['GET', 'POST'],
-        credentials: true
-    }
-});
+// // ===== Socket.io setup =====
+// const { Server } = require('socket.io');
+// const io = new Server(server, {
+//     cors: {
+//         origin: 'https://modest-blooming.vercel.app',
+//         methods: ['GET', 'POST'],
+//         credentials: true
+//     }
+// });
 
-// Listen for client connections
-io.on('connection', (socket) => {
-    console.log('🔌 A client connected:', socket.id);
+// // Listen for client connections
+// io.on('connection', (socket) => {
+//     console.log('🔌 A client connected:', socket.id);
 
-    socket.on('disconnect', () => {
-        console.log('❌ Client disconnected:', socket.id);
-    });
-});
+//     socket.on('disconnect', () => {
+//         console.log('❌ Client disconnected:', socket.id);
+//     });
+// });
 
-app.locals.io = io;
+// app.locals.io = io;
 
 app.use(cors({
     origin: 'https://modest-blooming.vercel.app',

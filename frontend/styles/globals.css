@@ -6,6 +6,12 @@ body {
     @apply bg-white text-primary font-primary;
 }
 
+html,
+body {
+    overflow-x: hidden !important;
+}
+
+
 /* styles/globals.css */
 .hide-scrollbar {
     scrollbar-width: none;

@@ -273,15 +273,6 @@ We're sorry for the inconvenience and hope to serve you better next time.
             await sendEmail(user.email, subject, body.trim());
         }
 
-        // ===== Emit Socket.io event for status update =====
-        const io = req.app.locals.io;
-        io.emit('orderStatusUpdated', {
-            orderId: order._id,
-            status: order.status,
-            userId: order.user._id,
-            updatedAt: new Date()
-        });
-
         // ===== Update analytics if order completed =====
         if (status === 'completed') {
             await updateAnalytics({ order });

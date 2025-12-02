@@ -300,7 +300,7 @@ export default function CartPage() {
                             return (
                                 <div
                                     key={item._id || p._id}
-                                    className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 p-4 flex gap-4 relative"
+                                    className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 p-4 flex gap-4 relative overflow-hidden"
                                 >
                                     {/* Product Image */}
                                     <div
@@ -437,7 +437,7 @@ export default function CartPage() {
                             />
                             {/* ======= Hamper Info Modal ======= */}
                             {showHamperModal && (
-                                <div className="fixed inset-0 flex justify-center items-end sm:items-center z-[100]">
+                                <div className="fixed inset-0 flex justify-center items-end sm:items-center z-[100] overflow-hidden">
                                     {/* Backdrop blur */}
                                     <div className="absolute inset-0 bg-black/30 backdrop-blur-sm animate-fadeIn"></div>
 
@@ -522,7 +522,7 @@ export default function CartPage() {
 
                 {/* ======= Fixed Bottom Checkout Bar ======= */}
                 {cart.length > 0 && (
-                    <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t shadow-xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:justify-between items-center gap-2 sm:gap-0">
+                    <div className="fixed bottom-0 inset-x-0 bg-white/90 backdrop-blur-lg border-t shadow-xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:justify-between items-center gap-2 sm:gap-0">
                         <p className="text-sm font-medium text-gray-700 font-body">
                             {cart.length} item(s) selected
                         </p>
@@ -566,11 +566,11 @@ export default function CartPage() {
                 {/* ======= Wishlist Modal ======= */}
                 {wishlistModalOpen && (
                     <div
-                        className="fixed hide-scrollbar inset-0 bg-black/60 flex justify-center items-end z-50 backdrop-blur-sm"
+                        className="fixed hide-scrollbar inset-0 bg-black/60 flex justify-center items-end z-50 backdrop-blur-sm overflow-hidden"
                         onClick={() => setWishlistModalOpen(false)} // Clicking on backdrop closes modal
                     >
                         <div
-                            className="bg-white w-full md:w-[650px] max-h-[75vh] rounded-t-3xl p-6 overflow-hidden shadow-2xl animate-slide-up relative"
+                            className="bg-white w-full md:w-[650px] max-h-[75vh] rounded-t-3xl p-6 overflow-hidden shadow-2xl animate-slide-up relative overscroll-none"
                             onClick={(e) => e.stopPropagation()} // Prevent click inside modal from closing it
                         >
                             {/* Header */}
