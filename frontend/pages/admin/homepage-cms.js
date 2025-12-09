@@ -32,7 +32,7 @@ function HomepageCMSAdmin() {
                 setFormData({
                     heroBanners: res.data.heroBanners || [],
                     brandBanner: res.data.brandBanner || null,
-                    bestSellerBanner: res.data.bestSellerBanner || null,
+                    bestSellerBanner: res.data.bestSellerBanner || {},
                     saleBanner: res.data.saleBanner || null,
                     announcements: res.data.announcements || [],
                     featuredProductIds: res.data.featuredProductIds || [],

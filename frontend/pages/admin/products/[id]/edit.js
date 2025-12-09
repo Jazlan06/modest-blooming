@@ -18,6 +18,7 @@ const EditProduct = () => {
         tags: '',
         weight: '',
         quantity: '',
+        bestSelling: false,
     });
 
     const [colors, setColors] = useState([]);
@@ -43,6 +44,7 @@ const EditProduct = () => {
                     tags: product.tags.join(', '),
                     weight: product.weight,
                     quantity: product.quantity || '',
+                    bestSelling: product.bestSelling || false,
                 });
 
                 setColors(product.colors || []);
@@ -253,6 +255,19 @@ const EditProduct = () => {
                             required
                             className="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                         />
+                    </div>
+
+                    <div className="flex items-center mt-4">
+                        <input
+                            type="checkbox"
+                            name="bestSelling"
+                            checked={formData.bestSelling}
+                            onChange={(e) =>
+                                setFormData({ ...formData, bestSelling: e.target.checked })
+                            }
+                            className="mr-2 accent-primary"
+                        />
+                        <label className="font-medium">Mark as Best Selling</label>
                     </div>
 
                     {/* Product Media */}

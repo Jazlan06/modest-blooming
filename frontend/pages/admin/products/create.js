@@ -17,6 +17,7 @@ const CreateProduct = () => {
         tags: '',
         weight: '',
         quantity: '',
+        bestSelling: false,
     });
 
     // Set default valid hex color to avoid input validation errors
@@ -212,6 +213,19 @@ const CreateProduct = () => {
                             required
                             className="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                         />
+                    </div>
+
+                    <div className="flex items-center mt-4">
+                        <input
+                            type="checkbox"
+                            name="bestSelling"
+                            checked={formData.bestSelling}
+                            onChange={(e) =>
+                                setFormData({ ...formData, bestSelling: e.target.checked })
+                            }
+                            className="mr-2 accent-primary"
+                        />
+                        <label className="font-medium">Mark as Best Selling</label>
                     </div>
 
                     {/* Product Media */}

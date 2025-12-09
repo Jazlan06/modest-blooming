@@ -31,6 +31,7 @@ const createProduct = async (req, res) => {
             groupId: groupId || uuidv4(),
             weight: Number(weight),
             quantity: Number(quantity) || 0,
+            bestSelling: req.body.bestSelling === 'true',
             isParent: true
         });
 
@@ -468,7 +469,7 @@ const getProductVariantWeight = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     try {
-        const { name, description, price, discountPrice, category, tags, colors, weight, quantity } = req.body;
+        const { name, description, price, discountPrice, category, tags, colors, weight, quantity, bestSelling } = req.body;
 
         // Parse JSON strings if needed
         const parsedColors = colors ? JSON.parse(colors) : [];
@@ -488,6 +489,7 @@ const updateProduct = async (req, res) => {
             tags: parsedTags,
             weight,
             quantity,
+            bestSelling: bestSelling === 'true',
         };
 
         // Handle main product images
